@@ -1,0 +1,1 @@
+rootProject.name = "mintstone-backend"
