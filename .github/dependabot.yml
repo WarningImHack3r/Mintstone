@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # Maintain dependencies for NPM dependencies
+  - package-ecosystem: "npm"
+    directory: "frontend"
+    schedule:
+      interval: "daily"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+  # Maintain dependencies for Gradle dependencies
+  - package-ecosystem: "gradle"
+    directory: "backend"
+    schedule:
+      interval: "daily"
+    groups:
+      gradle-dependencies:
+        patterns:
+          - "*"
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      gh-actions:
+        patterns:
+          - "*"
