@@ -13,6 +13,8 @@ import io.graversen.minecraft.rcon.service.ConnectOptions
 import io.graversen.minecraft.rcon.service.MinecraftRconService
 import io.graversen.minecraft.rcon.service.RconDetails
 import io.graversen.minecraft.rcon.util.Target
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -25,9 +27,19 @@ import java.util.*
 
 @RestController
 @RequestMapping("/rcon")
-class RCONController {
+class RCONController: DisposableBean {
 
+    private val log = LoggerFactory.getLogger(RCONController::class.java)
     private var connections = HashMap<String, MinecraftRconService>()
+
+    override fun destroy() {
+        if (connections.isNotEmpty()) {
+            log.info("Disconnecting from ${connections.size} RCON ${if (connections.size == 1) "server" else "servers"}")
+        }
+        connections.forEach { (_, connection) ->
+            connection.disconnect()
+        }
+    }
 
     // --- Helper functions ---
     private fun getServerParams(params: ObjectNode): RconDetails {
