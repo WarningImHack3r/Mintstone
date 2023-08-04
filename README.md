@@ -1,3 +1,5 @@
+<img src="frontend/static/Mintstone.png" alt="Mintstone Logo" width="100" />
+
 # Mintstone
 
 Comprehensive web admin panel for self-hosted Minecraft servers. Supports all servers since Minecraft [Beta 1.9-pre4](https://minecraft.fandom.com/wiki/Java_Edition_Beta_1.9_Prerelease_4) (2011/10).
