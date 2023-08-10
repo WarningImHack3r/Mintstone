@@ -7,10 +7,10 @@ settings:
 devDependencies:
   '@sveltejs/adapter-node':
     specifier: ^1.3.1
-    version: 1.3.1(@sveltejs/kit@1.22.4)
+    version: 1.3.1(@sveltejs/kit@1.22.5)
   '@sveltejs/kit':
-    specifier: ^1.22.4
-    version: 1.22.4(svelte@4.1.2)(vite@4.4.9)
+    specifier: ^1.22.5
+    version: 1.22.5(svelte@4.1.2)(vite@4.4.9)
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.3.0
     version: 6.3.0(@typescript-eslint/parser@6.3.0)(eslint@8.46.0)(typescript@5.1.6)
@@ -39,8 +39,8 @@ devDependencies:
     specifier: ^3.0.3
     version: 3.0.3(prettier@3.0.1)(svelte@4.1.2)
   prettier-plugin-tailwindcss:
-    specifier: ^0.4.1
-    version: 0.4.1(prettier-plugin-svelte@3.0.3)(prettier@3.0.1)
+    specifier: ^0.5.1
+    version: 0.5.1(prettier-plugin-svelte@3.0.3)(prettier@3.0.1)
   svelte:
     specifier: ^4.1.2
     version: 4.1.2
@@ -458,7 +458,7 @@ packages:
       rollup: 3.26.3
     dev: true
 
-  /@sveltejs/adapter-node@1.3.1(@sveltejs/kit@1.22.4):
+  /@sveltejs/adapter-node@1.3.1(@sveltejs/kit@1.22.5):
     resolution: {integrity: sha512-A0VgRQDCDPzdLNoiAbcOxGw4zT1Mc+n1LwT1OmO350R7WxrEqdMUChPPOd1iMfIDWlP4ie6E2d/WQf5es2d4Zw==}
     peerDependencies:
       '@sveltejs/kit': ^1.0.0
@@ -466,12 +466,12 @@ packages:
       '@rollup/plugin-commonjs': 25.0.3(rollup@3.26.3)
       '@rollup/plugin-json': 6.0.0(rollup@3.26.3)
       '@rollup/plugin-node-resolve': 15.1.0(rollup@3.26.3)
-      '@sveltejs/kit': 1.22.4(svelte@4.1.2)(vite@4.4.9)
+      '@sveltejs/kit': 1.22.5(svelte@4.1.2)(vite@4.4.9)
       rollup: 3.26.3
     dev: true
 
-  /@sveltejs/kit@1.22.4(svelte@4.1.2)(vite@4.4.9):
-    resolution: {integrity: sha512-Opkqw1QXk4Cc25b/heJP2D7mX+OUBFAq4MXKfET58svTTxdeiHFKzmnuRsSF3nmxESqrLjqPAgHpib+knNGzRw==}
+  /@sveltejs/kit@1.22.5(svelte@4.1.2)(vite@4.4.9):
+    resolution: {integrity: sha512-LHq+ECucoT6c6/tkrxIQtD8KVNhPFV4QQ+xOKTwBAs/Qdtff8P5gAzsIZiwEaaO6J6sYZoy5RP2VR6m8PSCgLA==}
     engines: {node: ^16.14 || >=18}
     hasBin: true
     requiresBuild: true
@@ -479,7 +479,7 @@ packages:
       svelte: ^3.54.0 || ^4.0.0-next.0
       vite: ^4.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 2.4.3(svelte@4.1.2)(vite@4.4.9)
+      '@sveltejs/vite-plugin-svelte': 2.4.5(svelte@4.1.2)(vite@4.4.9)
       '@types/cookie': 0.5.1
       cookie: 0.5.0
       devalue: 4.3.2
@@ -491,13 +491,13 @@ packages:
       set-cookie-parser: 2.6.0
       sirv: 2.0.3
       svelte: 4.1.2
-      undici: 5.22.1
+      undici: 5.23.0
       vite: 4.4.9
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@sveltejs/vite-plugin-svelte-inspector@1.0.3(@sveltejs/vite-plugin-svelte@2.4.3)(svelte@4.1.2)(vite@4.4.9):
+  /@sveltejs/vite-plugin-svelte-inspector@1.0.3(@sveltejs/vite-plugin-svelte@2.4.5)(svelte@4.1.2)(vite@4.4.9):
     resolution: {integrity: sha512-Khdl5jmmPN6SUsVuqSXatKpQTMIifoQPDanaxC84m9JxIibWvSABJyHpyys0Z+1yYrxY5TTEQm+6elh0XCMaOA==}
     engines: {node: ^14.18.0 || >= 16}
     peerDependencies:
@@ -505,7 +505,7 @@ packages:
       svelte: ^3.54.0 || ^4.0.0
       vite: ^4.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 2.4.3(svelte@4.1.2)(vite@4.4.9)
+      '@sveltejs/vite-plugin-svelte': 2.4.5(svelte@4.1.2)(vite@4.4.9)
       debug: 4.3.4
       svelte: 4.1.2
       vite: 4.4.9
@@ -513,20 +513,20 @@ packages:
       - supports-color
     dev: true
 
-  /@sveltejs/vite-plugin-svelte@2.4.3(svelte@4.1.2)(vite@4.4.9):
-    resolution: {integrity: sha512-NY2h+B54KHZO3kDURTdARqthn6D4YSIebtfW75NvZ/fwyk4G+AJw3V/i0OBjyN4406Ht9yZcnNWMuRUFnDNNiA==}
+  /@sveltejs/vite-plugin-svelte@2.4.5(svelte@4.1.2)(vite@4.4.9):
+    resolution: {integrity: sha512-UJKsFNwhzCVuiZd06jM/psscyNJNDwjQC+qIeb7GBJK9iWeQCcIyfcPWDvbCudfcJggY9jtxJeeaZH7uny93FQ==}
     engines: {node: ^14.18.0 || >= 16}
     peerDependencies:
       svelte: ^3.54.0 || ^4.0.0
       vite: ^4.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 1.0.3(@sveltejs/vite-plugin-svelte@2.4.3)(svelte@4.1.2)(vite@4.4.9)
+      '@sveltejs/vite-plugin-svelte-inspector': 1.0.3(@sveltejs/vite-plugin-svelte@2.4.5)(svelte@4.1.2)(vite@4.4.9)
       debug: 4.3.4
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.2
       svelte: 4.1.2
-      svelte-hmr: 0.15.2(svelte@4.1.2)
+      svelte-hmr: 0.15.3(svelte@4.1.2)
       vite: 4.4.9
       vitefu: 0.2.4(vite@4.4.9)
     transitivePeerDependencies:
@@ -1844,16 +1844,16 @@ packages:
       svelte: 4.1.2
     dev: true
 
-  /prettier-plugin-tailwindcss@0.4.1(prettier-plugin-svelte@3.0.3)(prettier@3.0.1):
-    resolution: {integrity: sha512-hwn2EiJmv8M+AW4YDkbjJ6HlZCTzLyz1QlySn9sMuKV/Px0fjwldlB7tol8GzdgqtkdPtzT3iJ4UzdnYXP25Ag==}
-    engines: {node: '>=12.17.0'}
+  /prettier-plugin-tailwindcss@0.5.1(prettier-plugin-svelte@3.0.3)(prettier@3.0.1):
+    resolution: {integrity: sha512-dvJRVoYlzTXa7mD1DooUl0m+7XXMiaClTgZATah27x0vqWAnmoTdndGdpRZDUXl9chk1FFiaQ0ncquUOKBhMoQ==}
+    engines: {node: '>=14.21.3'}
     peerDependencies:
       '@ianvs/prettier-plugin-sort-imports': '*'
       '@prettier/plugin-pug': '*'
       '@shopify/prettier-plugin-liquid': '*'
       '@shufo/prettier-plugin-blade': '*'
       '@trivago/prettier-plugin-sort-imports': '*'
-      prettier: ^2.2 || ^3.0
+      prettier: ^3.0
       prettier-plugin-astro: '*'
       prettier-plugin-css-order: '*'
       prettier-plugin-import-sort: '*'
@@ -2146,11 +2146,11 @@ packages:
       svelte: 4.1.2
     dev: true
 
-  /svelte-hmr@0.15.2(svelte@4.1.2):
-    resolution: {integrity: sha512-q/bAruCvFLwvNbeE1x3n37TYFb3mTBJ6TrCq6p2CoFbSTNhDE9oAtEfpy+wmc9So8AG0Tja+X0/mJzX9tSfvIg==}
+  /svelte-hmr@0.15.3(svelte@4.1.2):
+    resolution: {integrity: sha512-41snaPswvSf8TJUhlkoJBekRrABDXDMdpNpT2tfHIv4JuhgvHqLMhEPGtaQn0BmbNSTkuz2Ed20DF2eHw0SmBQ==}
     engines: {node: ^12.20 || ^14.13.1 || >= 16}
     peerDependencies:
-      svelte: ^3.19.0 || ^4.0.0-next.0
+      svelte: ^3.19.0 || ^4.0.0
     dependencies:
       svelte: 4.1.2
     dev: true
@@ -2317,8 +2317,8 @@ packages:
     hasBin: true
     dev: true
 
-  /undici@5.22.1:
-    resolution: {integrity: sha512-Ji2IJhFXZY0x/0tVBXeQwgPlLWw13GVzpsWPQ3rV50IFMMof2I55PZZxtm4P6iNq+L5znYN9nSTAq0ZyE6lSJw==}
+  /undici@5.23.0:
+    resolution: {integrity: sha512-1D7w+fvRsqlQ9GscLBwcAJinqcZGHUKjbOmXdlE/v8BvEGXjeWAax+341q44EuTcHXXnfyKNbKRq4Lg7OzhMmg==}
     engines: {node: '>=14.0'}
     dependencies:
       busboy: 1.6.0
