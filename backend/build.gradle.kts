@@ -29,7 +29,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     // RCON
-    implementation("com.github.WarningImHack3r:minecraft-rcon:1.0.0")
+    implementation("com.github.WarningImHack3r:minecraft-rcon:1.1.0")
     // Query protocol
     implementation("com.github.tekgator:JAVA-QueryMinecraftServer:1.2") {
         exclude(group = "org.slf4j", module = "slf4j-api")

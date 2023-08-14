@@ -4,15 +4,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.warningimhack3r.mintstonebackend.utils.responseStringSanitized
-import io.graversen.minecraft.rcon.commands.BanCommand
-import io.graversen.minecraft.rcon.commands.KickCommand
-import io.graversen.minecraft.rcon.commands.PlayerListCommand
-import io.graversen.minecraft.rcon.commands.StopCommand
+import io.graversen.minecraft.rcon.commands.*
 import io.graversen.minecraft.rcon.commands.base.ICommand
 import io.graversen.minecraft.rcon.service.ConnectOptions
 import io.graversen.minecraft.rcon.service.MinecraftRconService
 import io.graversen.minecraft.rcon.service.RconDetails
 import io.graversen.minecraft.rcon.util.Target
+import io.graversen.minecraft.rcon.util.WhiteListMode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.http.HttpStatus
@@ -113,5 +111,199 @@ class RCONController: DisposableBean {
     @PostMapping("/stop")
     fun stopServer(@RequestBody params: ObjectNode) = wrapInObject {
         sendCommandFromParams(params, StopCommand())
+    }
+
+    @GetMapping("/version")
+    fun getServerVersion(@RequestBody params: ObjectNode): Any = sendCommandFromParams(params) { "version" }.let { response ->
+        if (response.lowercase().contains("checking version")) {
+            log.info("Server is still checking version, waiting 100ms and trying again")
+            Thread.sleep(100)
+            getServerVersion(params)
+        } else object {
+            val status = "success"
+            val platform = with(response) {
+                when {
+                    contains(" Paper ") -> "Paper"
+                    contains("Spigot") -> "Spigot" // TODO: Check if this is correct
+                    contains("Bukkit") -> "Bukkit" // TODO: Check if this is correct
+                    // TODO: Add more platforms?
+                    startsWith("Unknown command") -> "Vanilla"
+                    else -> "Unknown"
+                }
+            }
+            val version = when(platform) {
+                "Paper" -> response.substringAfter("git-Paper-").substringBefore(" (MC:")
+                "Spigot" -> "" // TODO
+                "Bukkit" -> "" // TODO
+                "Vanilla" -> null
+                else -> "Unknown"
+            }
+        }
+    }
+
+    @PostMapping("/check-for-updates")
+    fun checkForUpdates(
+        @RequestBody params: ObjectNode,
+        @RequestParam platform: String,
+        @RequestParam("serverVersion") platformVersion: String,
+        @RequestParam gameVersion: String
+    ): Any {
+        fun makeAPICall(url: String): JsonObject? {
+            val response = try {
+                HttpClient.newHttpClient()
+                    .send(HttpRequest.newBuilder()
+                        .uri(URI(url))
+                        .build(), HttpResponse.BodyHandlers.ofString())
+                    .body()
+            } catch (e: Exception) {
+                println("Unable to make API call to $url")
+                return null
+            }
+            return try {
+                JsonParser.parseString(response).asJsonObject
+            } catch (e: Exception) {
+                println("Unable to parse response from $url")
+                null
+            }
+        }
+
+        data class Change(val version: String, val changes: List<String>)
+        data class NewVersion(val version: String, val downloadUrl: String, val changes: List<Change>)
+
+        val info = when(platform.lowercase()) {
+            "paper" -> {
+                val paperVersion = platformVersion.toIntOrNull() ?: run {
+                    log.error("Unable to parse Paper version: $platformVersion")
+                    return object {
+                        val status = "error"
+                        val message = "Unable to parse Paper version: $platformVersion"
+                    }
+                }
+                val newBuilds = makeAPICall("https://api.papermc.io/v2/projects/paper/versions/$gameVersion/builds")
+                    ?.get("builds")?.asJsonArray?.filter { build ->
+                        build.asJsonObject.get("build").asInt > paperVersion
+                    } ?: emptyList()
+                val changes = newBuilds.map { build ->
+                        val buildObject = build.asJsonObject
+                        Change(buildObject.get("build").asString, buildObject.get("changes").asJsonArray.map { change ->
+                            change.asJsonObject.get("message").asString.trim()
+                        })
+                    }.reversed()
+                if (newBuilds.isEmpty()) null else NewVersion(
+                    changes.first().version,
+                    "https://api.papermc.io/v2/projects/paper/versions/$gameVersion/builds/${changes.first().version}/downloads/paper-$gameVersion-${changes.first().version}.jar",
+                    changes
+                )
+            }
+            // TODO: Add more platforms
+            else -> return object {
+                val status = "error"
+                val message = "Unknown platform: $platform"
+            }
+        }
+
+        return object {
+            val status = "success"
+            val updateAvailable = info != null
+            val latestVersion = info?.version
+            val downloadUrl = info?.downloadUrl
+            val changes = info?.changes
+        }
+    }
+
+
+    // --- Dashboard commands ---
+    @GetMapping("/playerslist")
+    fun getPlayersList(@RequestBody params: ObjectNode) = object {
+        val status = "success"
+        val players = sendCommandFromParams(params, PlayerListCommand.uuids())
+            .split(", ")
+            .map { playerLine ->
+                val filteredLine = playerLine
+                                    .removePrefix(playerLine.substringBefore(":") + ":").trim()
+                                    .replace(Regex("[()]"), "")
+                object {
+                    val name = filteredLine.substringBefore(" ")
+                    val uuid = filteredLine.substringAfter(" ")
+                }
+            }
+        val playersCount = players.size
+    }
+
+
+    // --- Player commands ---
+    @PostMapping("/kick")
+    fun kickPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String,
+        @RequestParam("reason") kickReason: Optional<String>
+    ) = wrapInObject {
+        sendCommandFromParams(params, KickCommand(Target.player(playerName), kickReason.orElse(null)))
+    }
+
+    @PostMapping("/ban")
+    fun banPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String,
+        @RequestParam("reason") banReason: Optional<String>
+    ) = wrapInObject {
+        sendCommandFromParams(params, BanCommand(Target.player(playerName), banReason.orElse(null)))
+    }
+
+    @PostMapping("/ban-ip")
+    fun banPlayerIp(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String,
+        @RequestParam("reason") banReason: Optional<String>
+    ) = wrapInObject {
+        sendCommandFromParams(params, BanIpCommand(Target.player(playerName), banReason.orElse(null)))
+    }
+
+    @PostMapping("/pardon")
+    fun pardonPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, PardonCommand(Target.player(playerName)))
+    }
+
+    @PostMapping("/kill")
+    fun killPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, KillCommand(Target.player(playerName)))
+    }
+
+    @PostMapping("/op")
+    fun opPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, OpCommand(Target.player(playerName)))
+    }
+
+    @PostMapping("/deop")
+    fun deopPlayer(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, DeOpCommand(Target.player(playerName)))
+    }
+
+    @PostMapping("/whitelist-add")
+    fun addToWhitelist(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, WhiteListCommand(Target.player(playerName), WhiteListMode.Targeted.ADD))
+    }
+
+    @PostMapping("/whitelist-remove")
+    fun removeFromWhitelist(
+        @RequestBody params: ObjectNode,
+        @RequestParam("player") playerName: String
+    ) = wrapInObject {
+        sendCommandFromParams(params, WhiteListCommand(Target.player(playerName), WhiteListMode.Targeted.REMOVE))
     }
 }
