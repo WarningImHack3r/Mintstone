@@ -1,11 +1,32 @@
 <script lang="ts">
-	import "../app.postcss";
-	import { AppShell, AppBar, autoModeWatcher, Drawer, drawerStore } from "@skeletonlabs/skeleton";
-	import ServersList from "$lib/Navigation/ServersList.svelte";
+	import "../app.css";
+	import {
+		AppShell,
+		AppBar,
+		autoModeWatcher,
+		Drawer,
+		drawerStore,
+		localStorageStore
+	} from "@skeletonlabs/skeleton";
+	import { MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
+	import ServersList from "$lib/nav/ServersList.svelte";
 
-	function drawerOpen() {
-		drawerStore.open({});
+	function openDrawerOrSidebar() {
+		const shouldOpenSidebar = hiddenButton.computedStyleMap().get("display")?.toString() === "none";
+		shouldOpenSidebar
+			? ($sidebarOpen = true)
+			: drawerStore.open({
+					width: "w-72"
+			  });
 	}
+
+	function sidebarClose() {
+		$sidebarOpen = false;
+	}
+
+	let hiddenButton: HTMLElement;
+
+	const sidebarOpen = localStorageStore("sidebarOpen", true);
 </script>
 
 <svelte:head>
@@ -21,28 +42,48 @@
 <AppShell
 	regionPage="relative"
 	slotPageHeader="sticky top-0 z-10"
-	slotSidebarLeft="bg-surface-500/5 w-0 lg:w-64"
+	slotSidebarLeft="bg-surface-500/5 w-0 {$sidebarOpen ? 'lg:w-64' : ''}"
 >
 	<svelte:fragment slot="pageHeader">
 		<!-- App Bar -->
 		<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">
 				<div class="flex items-center">
-					<button class="btn btn-sm mr-4 lg:hidden" on:click={drawerOpen}>
+					<button
+						type="button"
+						class="btn btn-sm mr-4 {$sidebarOpen ? 'lg:hidden' : ''}"
+						on:click={openDrawerOrSidebar}
+					>
 						<span>
-							<svg viewBox="0 0 100 80" class="fill-token h-4 w-4">
-								<rect width="100" height="20" />
-								<rect y="30" width="100" height="20" />
-								<rect y="60" width="100" height="20" />
-							</svg>
+							<MenuIcon />
 						</span>
 					</button>
 				</div>
 			</svelte:fragment>
-			Mintstone
+			<div class="flex items-center gap-2">
+				<img src="/favicon.png" alt="Mintstone logo" class="h-6 w-6" width="42" height="48" />
+				<div class="flex items-baseline gap-2">
+					<h1>Mintstone</h1>
+					<small class="text-sm opacity-50">v1.0.0</small>
+				</div>
+			</div>
+			<svelte:fragment slot="trail">
+				<UserIcon />
+				<SettingsIcon />
+			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
 	<svelte:fragment slot="sidebarLeft">
+		<!-- Hidden div to determine if the screen is larger than `lg` or not, thus deciding if we should open the drawer or the sidebar -->
+		<div bind:this={hiddenButton} class="lg:hidden" />
+
+		<div class="p-4 pb-0">
+			<button type="button" class="btn btn-sm" on:click={sidebarClose}>
+				<span>
+					<MenuIcon />
+				</span>
+			</button>
+		</div>
 		<ServersList />
 	</svelte:fragment>
 	<!-- Page Route Content -->

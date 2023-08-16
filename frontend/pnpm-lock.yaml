@@ -56,6 +56,9 @@ devDependencies:
   svelte-check:
     specifier: ^3.5.0
     version: 3.5.0(postcss@8.4.28)(svelte@4.2.0)
+  svelte-feather-icons:
+    specifier: ^4.0.1
+    version: 4.0.1
   tailwindcss:
     specifier: ^3.3.3
     version: 3.3.3
@@ -2177,6 +2180,12 @@ packages:
       svelte: 4.2.0
     dev: true
 
+  /svelte-feather-icons@4.0.1:
+    resolution: {integrity: sha512-DMDrlbblaRUHLcTFtKHE4GWQ/Fk/kneGIZrrI75EmTxCu1hgHe8uq8e80ONrmdjL/i3f1d8fkcx73SWng2X6Gg==}
+    dependencies:
+      svelte: 3.59.2
+    dev: true
+
   /svelte-hmr@0.15.3(svelte@4.2.0):
     resolution: {integrity: sha512-41snaPswvSf8TJUhlkoJBekRrABDXDMdpNpT2tfHIv4JuhgvHqLMhEPGtaQn0BmbNSTkuz2Ed20DF2eHw0SmBQ==}
     engines: {node: ^12.20 || ^14.13.1 || >= 16}
@@ -2232,6 +2241,11 @@ packages:
       strip-indent: 3.0.0
       svelte: 4.2.0
       typescript: 5.1.6
+    dev: true
+
+  /svelte@3.59.2:
+    resolution: {integrity: sha512-vzSyuGr3eEoAtT/A6bmajosJZIUWySzY2CzB3w2pgPvnkUjGqlDnsNnA0PMO+mMAhuyMul6C2uuZzY6ELSkzyA==}
+    engines: {node: '>= 8'}
     dev: true
 
   /svelte@4.2.0:
