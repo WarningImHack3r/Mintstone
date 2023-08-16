@@ -1,7 +1,12 @@
 <script lang="ts">
 	import "../app.postcss";
-	import { AppShell, AppBar } from "@skeletonlabs/skeleton";
+	import { AppShell, AppBar, autoModeWatcher } from "@skeletonlabs/skeleton";
 </script>
+
+<svelte:head>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
+</svelte:head>
 
 <!-- App Shell -->
 <AppShell>
