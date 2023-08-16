@@ -6,11 +6,27 @@
 		autoModeWatcher,
 		Drawer,
 		drawerStore,
-		localStorageStore
+		localStorageStore,
+		popup,
+		storePopup,
+		ListBox,
+		ListBoxItem
 	} from "@skeletonlabs/skeleton";
-	import { MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
+	import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
+	import { LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
 	import ServersList from "$lib/nav/ServersList.svelte";
 
+	// Enable popups
+	storePopup.set({
+		computePosition,
+		autoUpdate,
+		offset,
+		shift,
+		flip,
+		arrow
+	});
+
+	// Event handlers
 	function openDrawerOrSidebar() {
 		const shouldOpenSidebar = hiddenButton.computedStyleMap().get("display")?.toString() === "none";
 		shouldOpenSidebar
@@ -24,8 +40,10 @@
 		$sidebarOpen = false;
 	}
 
+	// Variables
 	let hiddenButton: HTMLElement;
 
+	// Stores
 	const sidebarOpen = localStorageStore("sidebarOpen", true);
 </script>
 
@@ -34,6 +52,7 @@
 	{@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
 </svelte:head>
 
+<!-- Drawer -->
 <Drawer>
 	<ServersList />
 </Drawer>
@@ -42,7 +61,7 @@
 <AppShell
 	regionPage="relative"
 	slotPageHeader="sticky top-0 z-10"
-	slotSidebarLeft="bg-surface-500/5 w-0 {$sidebarOpen ? 'lg:w-64' : ''}"
+	slotSidebarLeft="bg-surface-50-900-token w-0 {$sidebarOpen ? 'lg:w-64' : ''}"
 >
 	<svelte:fragment slot="pageHeader">
 		<!-- App Bar -->
@@ -68,8 +87,39 @@
 				</div>
 			</div>
 			<svelte:fragment slot="trail">
-				<UserIcon />
-				<SettingsIcon />
+				<!-- Profile -->
+				<button
+					type="button"
+					class="btn-icon-md btn-icon"
+					use:popup={{
+						event: "click",
+						target: "profileMenu"
+					}}
+				>
+					<UserIcon />
+				</button>
+				<div class="card w-48 p-4 shadow-xl" data-popup="profileMenu">
+					<div class="bg-surface-100-800-token arrow" />
+					<ListBox>
+						<ListBoxItem group="" name="profile-menu" value="profile">
+							<svelte:fragment slot="lead">
+								<UserIcon />
+							</svelte:fragment>
+							Manage Profile
+						</ListBoxItem>
+						<hr />
+						<ListBoxItem group="" name="profile-menu" value="logout" class="text-error-500">
+							<svelte:fragment slot="lead">
+								<LogOutIcon />
+							</svelte:fragment>
+							Logout
+						</ListBoxItem>
+					</ListBox>
+				</div>
+
+				<button type="button" class="btn-icon-md btn-icon">
+					<SettingsIcon />
+				</button>
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
@@ -77,7 +127,7 @@
 		<!-- Hidden div to determine if the screen is larger than `lg` or not, thus deciding if we should open the drawer or the sidebar -->
 		<div bind:this={hiddenButton} class="lg:hidden" />
 
-		<div class="p-4 pb-0">
+		<div class="pb-0 pl-4 pt-5">
 			<button type="button" class="btn btn-sm" on:click={sidebarClose}>
 				<span>
 					<MenuIcon />
@@ -86,6 +136,7 @@
 		</div>
 		<ServersList />
 	</svelte:fragment>
+
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>
