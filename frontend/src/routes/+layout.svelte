@@ -13,7 +13,7 @@
 		ListBoxItem
 	} from "@skeletonlabs/skeleton";
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
-	import { LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
+	import { GithubIcon, LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
 	import ServersList from "$lib/nav/ServersList.svelte";
 
 	// Enable popups
@@ -81,9 +81,34 @@
 			</svelte:fragment>
 			<div class="flex items-center gap-2">
 				<img src="/favicon.png" alt="Mintstone logo" class="h-6 w-6" width="42" height="48" />
-				<div class="flex items-baseline gap-2">
-					<h1>Mintstone</h1>
-					<small class="text-sm opacity-50">v1.0.0</small>
+				<div class="flex items-baseline">
+					<h1><a href="/">Mintstone</a></h1>
+					<button
+						type="button"
+						class="btn btn-sm text-sm opacity-50"
+						use:popup={{
+							event: "click",
+							target: "versionMenu"
+						}}
+					>
+						v1.0.0
+					</button>
+					<div class="card w-48 shadow-xl" data-popup="versionMenu">
+						<div class="bg-surface-100-800-token arrow" />
+						<div class="px-4 py-2">
+							<strong>v1.0.0</strong>
+							<p class="text-sm opacity-75">Up-to-date!</p>
+						</div>
+						<hr />
+						<a
+							href="https://github.com/WarningImHack3r/Mintstone"
+							target="_blank"
+							class="bg-surface-400-500-token flex items-center gap-1 rounded-b-md px-4 py-2 hover:variant-soft-surface"
+						>
+							<GithubIcon class="h-4" />
+							Open on GitHub
+						</a>
+					</div>
 				</div>
 			</div>
 			<svelte:fragment slot="trail">
