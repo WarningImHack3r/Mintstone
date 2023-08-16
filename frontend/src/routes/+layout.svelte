@@ -1,6 +1,11 @@
 <script lang="ts">
 	import "../app.postcss";
-	import { AppShell, AppBar, autoModeWatcher } from "@skeletonlabs/skeleton";
+	import { AppShell, AppBar, autoModeWatcher, Drawer, drawerStore } from "@skeletonlabs/skeleton";
+	import ServersList from "$lib/Navigation/ServersList.svelte";
+
+	function drawerOpen() {
+		drawerStore.open({});
+	}
 </script>
 
 <svelte:head>
@@ -8,41 +13,37 @@
 	{@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
 </svelte:head>
 
+<Drawer>
+	<ServersList />
+</Drawer>
+
 <!-- App Shell -->
-<AppShell>
-	<svelte:fragment slot="header">
+<AppShell
+	regionPage="relative"
+	slotPageHeader="sticky top-0 z-10"
+	slotSidebarLeft="bg-surface-500/5 w-0 lg:w-64"
+>
+	<svelte:fragment slot="pageHeader">
 		<!-- App Bar -->
-		<AppBar>
+		<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
+				<div class="flex items-center">
+					<button class="btn btn-sm mr-4 lg:hidden" on:click={drawerOpen}>
+						<span>
+							<svg viewBox="0 0 100 80" class="fill-token h-4 w-4">
+								<rect width="100" height="20" />
+								<rect y="30" width="100" height="20" />
+								<rect y="60" width="100" height="20" />
+							</svg>
+						</span>
+					</button>
+				</div>
 			</svelte:fragment>
-			<svelte:fragment slot="trail">
-				<a
-					class="variant-ghost-surface btn btn-sm"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Discord
-				</a>
-				<a
-					class="variant-ghost-surface btn btn-sm"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Twitter
-				</a>
-				<a
-					class="variant-ghost-surface btn btn-sm"
-					href="https://github.com/skeletonlabs/skeleton"
-					target="_blank"
-					rel="noreferrer"
-				>
-					GitHub
-				</a>
-			</svelte:fragment>
+			Mintstone
 		</AppBar>
+	</svelte:fragment>
+	<svelte:fragment slot="sidebarLeft">
+		<ServersList />
 	</svelte:fragment>
 	<!-- Page Route Content -->
 	<slot />
