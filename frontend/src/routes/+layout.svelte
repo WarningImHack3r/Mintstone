@@ -5,18 +5,17 @@
 		AppBar,
 		autoModeWatcher,
 		Drawer,
-		drawerStore,
+		getDrawerStore,
+		initializeStores,
 		localStorageStore,
 		popup,
-		storePopup,
-		ListBox,
-		ListBoxItem
+		storePopup
 	} from "@skeletonlabs/skeleton";
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
 	import { GithubIcon, LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
 	import ServersList from "$lib/nav/ServersList.svelte";
 
-	// Enable popups
+	// Handle stores
 	storePopup.set({
 		computePosition,
 		autoUpdate,
@@ -25,6 +24,8 @@
 		flip,
 		arrow
 	});
+	initializeStores();
+	const drawerStore = getDrawerStore();
 
 	// Event handlers
 	function openDrawerOrSidebar() {

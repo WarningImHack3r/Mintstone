@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { drawerStore, popup } from "@skeletonlabs/skeleton";
+	import { getDrawerStore, popup } from "@skeletonlabs/skeleton";
 	import { EditIcon, MoreVerticalIcon, TrashIcon } from "svelte-feather-icons";
 
 	function drawerClose(target: EventTarget | null) {
@@ -11,7 +11,7 @@
 			return;
 		}
 
-		drawerStore.close();
+		getDrawerStore().close();
 	}
 
 	let editMode = false;
