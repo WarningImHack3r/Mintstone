@@ -8,6 +8,7 @@
 		getDrawerStore,
 		initializeStores,
 		localStorageStore,
+		Modal,
 		popup,
 		storePopup
 	} from "@skeletonlabs/skeleton";
@@ -52,6 +53,9 @@
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html `<script>${autoModeWatcher.toString()} autoModeWatcher();</script>`}
 </svelte:head>
+
+<!-- Modal -->
+<Modal regionBody="max-h-80 overflow-y-auto" />
 
 <!-- Drawer -->
 <Drawer>

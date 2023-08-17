@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { getDrawerStore, popup } from "@skeletonlabs/skeleton";
-	import { EditIcon, MoreVerticalIcon, TrashIcon } from "svelte-feather-icons";
+	import { serversDb } from "$lib/db/stores";
+	import { getDrawerStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
+	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
 
-	function drawerClose(target: EventTarget | null) {
+	function serverSelected(target: EventTarget | null, index: number) {
+		$serverIndexStore = index;
+
 		// Dirty hack to prevent closing the drawer when clicking on the menu button
 		if (target instanceof SVGElement) {
 			target = target.parentElement;
@@ -15,46 +18,58 @@
 	}
 
 	let editMode = false;
-	const servers: { id: number; name: string; ip: string }[] = [
-		{
-			id: 0,
-			name: "Server 1",
-			ip: "192.168.1.19"
-		},
-		{
-			id: 1,
-			name: "Server 2",
-			ip: "192.168.1.20"
-		}
-	];
+	const serverIndexStore = localStorageStore("serverIndex", 0);
+	$: $serverIndexStore =
+		$serverIndexStore > $serversDb.length && $serversDb.length > 0 ? 0 : $serverIndexStore;
 </script>
 
 <nav class="list-nav p-4">
-	<span class="flex items-baseline justify-between py-4 pl-4">
+	<span class="flex items-center justify-between py-4 pl-4">
 		<h3 class="h3">Servers</h3>
-		<button
-			type="button"
-			class="btn-sm font-bold uppercase opacity-50"
-			on:click={() => (editMode = !editMode)}
-		>
-			{#if editMode}
-				Done
-			{:else}
-				Edit
+		<div class="flex gap-0">
+			{#if !editMode}
+				<a href="/" class="btn btn-icon" on:click={() => getDrawerStore().close()}>
+					<span>
+						<PlusIcon class="h-4" />
+					</span>
+				</a>
 			{/if}
-		</button>
-	</span>
-	<ul>
-		{#each servers as server, index}
-			<li>
-				{#if editMode}
-					<div class="list-option">
-						<span class="variant-soft-tertiary badge-icon p-4">S</span>
-						<span class="flex-auto">
-							<dt class="font-bold">{server.name}</dt>
-							<dd class="text-sm opacity-50">{server.ip}</dd>
+			{#if $serversDb.length > 0}
+				<button
+					type="button"
+					class={editMode ? "btn btn-sm font-bold uppercase opacity-50" : "btn btn-icon"}
+					on:click={() => (editMode = !editMode)}
+				>
+					{#if editMode}
+						Done
+					{:else}
+						<span>
+							<Edit2Icon class="h-4" />
 						</span>
-						{#if editMode}
+					{/if}
+				</button>
+			{/if}
+		</div>
+	</span>
+	{#if $serversDb.length === 0}
+		<p class="text-center opacity-50">No servers yet</p>
+	{:else}
+		<ul>
+			{#each $serversDb as server, index}
+				<li class={editMode ? "" : "child:w-full"}>
+					{#if editMode}
+						<div class="list-option">
+							<span class="variant-soft-tertiary badge-icon p-4">
+								{#if server.icon}
+									<img src={server.icon} alt={server.name} />
+								{:else}
+									{server.name.length > 0 ? server.name[0].toUpperCase() : "?"}
+								{/if}
+							</span>
+							<span>
+								<dt class="font-bold">{server.name}</dt>
+								<dd class="text-sm opacity-50">{server.address}</dd>
+							</span>
 							<button
 								type="button"
 								class="btn-icon btn-icon-lg"
@@ -65,46 +80,51 @@
 							>
 								<MoreVerticalIcon />
 							</button>
-						{/if}
+						</div>
+					{:else}
+						<button
+							class={index === $serverIndexStore ? "!variant-soft-primary" : ""}
+							on:click={e => serverSelected(e.target, index)}
+						>
+							<span class="variant-soft-tertiary badge-icon p-4">
+								{#if server.icon}
+									<img src={server.icon} alt={server.name} />
+								{:else}
+									{server.name.length > 0 ? server.name[0].toUpperCase() : "?"}
+								{/if}
+							</span>
+							<span>
+								<dt class="font-bold">{server.name}</dt>
+								<dd class="text-sm opacity-50">{server.address}</dd>
+							</span>
+						</button>
+					{/if}
+					<div class="card z-10 w-48 p-4 shadow-xl" data-popup="serverMenu{index}">
+						<div class="bg-surface-100-800-token arrow" />
+						<nav class="list-nav">
+							<ul>
+								<li>
+									<a href="/">
+										<span class="badge">
+											<EditIcon />
+										</span>
+										<span class="flex-auto">Edit</span>
+									</a>
+								</li>
+								<hr />
+								<li>
+									<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
+										<span class="badge">
+											<TrashIcon />
+										</span>
+										<span class="flex-auto">Delete</span>
+									</a>
+								</li>
+							</ul>
+						</nav>
 					</div>
-				{:else}
-					<a
-						href="/"
-						class={server.id === 0 ? "!variant-soft-primary" : ""}
-						on:click={e => drawerClose(e.target)}
-					>
-						<span class="variant-soft-tertiary badge-icon p-4">S</span>
-						<span class="flex-auto">
-							<dt class="font-bold">{server.name}</dt>
-							<dd class="text-sm opacity-50">{server.ip}</dd>
-						</span>
-					</a>
-				{/if}
-				<div class="card z-10 w-48 p-4 shadow-xl" data-popup="serverMenu{index}">
-					<div class="bg-surface-100-800-token arrow" />
-					<nav class="list-nav">
-						<ul>
-							<li>
-								<a href="/">
-									<span class="badge">
-										<EditIcon />
-									</span>
-									<span class="flex-auto">Edit</span>
-								</a>
-							</li>
-							<hr />
-							<li>
-								<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
-									<span class="badge">
-										<TrashIcon />
-									</span>
-									<span class="flex-auto">Delete</span>
-								</a>
-							</li>
-						</ul>
-					</nav>
-				</div>
-			</li>
-		{/each}
-	</ul>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 </nav>
