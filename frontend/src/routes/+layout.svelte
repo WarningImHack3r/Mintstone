@@ -82,7 +82,7 @@
 			<div class="flex items-center gap-2">
 				<img src="/favicon.png" alt="Mintstone logo" class="h-6 w-6" width="42" height="48" />
 				<div class="flex items-baseline">
-					<h1><a href="/">Mintstone</a></h1>
+					<h1 class="text-lg"><a href="/">Mintstone</a></h1>
 					<button
 						type="button"
 						class="btn btn-sm text-sm opacity-50"
@@ -93,22 +93,22 @@
 					>
 						v1.0.0
 					</button>
-					<div class="card w-48 shadow-xl" data-popup="versionMenu">
-						<div class="bg-surface-100-800-token arrow" />
-						<div class="px-4 py-2">
-							<strong>v1.0.0</strong>
-							<p class="text-sm opacity-75">Up-to-date!</p>
-						</div>
-						<hr />
-						<a
-							href="https://github.com/WarningImHack3r/Mintstone"
-							target="_blank"
-							class="bg-surface-400-500-token flex items-center gap-1 rounded-b-md px-4 py-2 hover:variant-soft-surface"
-						>
-							<GithubIcon class="h-4" />
-							Open on GitHub
-						</a>
+				</div>
+				<div class="card w-48 shadow-xl" data-popup="versionMenu">
+					<div class="bg-surface-100-800-token arrow" />
+					<div class="px-4 py-2">
+						<strong>v1.0.0</strong>
+						<p class="text-sm opacity-75">Up-to-date!</p>
 					</div>
+					<hr />
+					<a
+						href="https://github.com/WarningImHack3r/Mintstone"
+						target="_blank"
+						class="bg-surface-400-500-token flex items-center gap-1 rounded-b-md px-4 py-2 hover:variant-soft-surface"
+					>
+						<GithubIcon class="h-4" />
+						Open on GitHub
+					</a>
 				</div>
 			</div>
 			<svelte:fragment slot="trail">
@@ -123,29 +123,35 @@
 				>
 					<UserIcon />
 				</button>
-				<div class="card w-48 p-4 shadow-xl" data-popup="profileMenu">
-					<div class="bg-surface-100-800-token arrow" />
-					<ListBox>
-						<ListBoxItem group="" name="profile-menu" value="profile">
-							<svelte:fragment slot="lead">
-								<UserIcon />
-							</svelte:fragment>
-							Manage Profile
-						</ListBoxItem>
-						<hr />
-						<ListBoxItem group="" name="profile-menu" value="logout" class="text-error-500">
-							<svelte:fragment slot="lead">
-								<LogOutIcon />
-							</svelte:fragment>
-							Logout
-						</ListBoxItem>
-					</ListBox>
-				</div>
 
 				<button type="button" class="btn-icon-md btn-icon">
 					<SettingsIcon />
 				</button>
 			</svelte:fragment>
+			<div class="card w-48 p-2 shadow-xl" data-popup="profileMenu">
+				<div class="bg-surface-100-800-token arrow" />
+				<nav class="list-nav">
+					<ul>
+						<li>
+							<a href="/">
+								<span class="badge">
+									<UserIcon />
+								</span>
+								<span class="flex-auto whitespace-pre-wrap">Manage Profile</span>
+							</a>
+						</li>
+						<hr />
+						<li>
+							<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
+								<span class="badge">
+									<LogOutIcon />
+								</span>
+								<span class="flex-auto">Log Out</span>
+							</a>
+						</li>
+					</ul>
+				</nav>
+			</div>
 		</AppBar>
 	</svelte:fragment>
 	<svelte:fragment slot="sidebarLeft">

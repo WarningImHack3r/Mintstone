@@ -1,3 +1,3 @@
 <svelte:head>
-	<title>Mintstone | Dashboard</title>
+	<title>Dashboard | Mintstone</title>
 </svelte:head>
