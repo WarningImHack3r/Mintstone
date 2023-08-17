@@ -187,7 +187,7 @@ class RCONController: DisposableBean {
         }
 
         data class Change(val version: String, val changes: List<String>)
-        data class NewVersion(val version: String, val downloadUrl: String, val changes: List<Change>)
+        data class NewVersion(val version: String, val downloadUrl: String, val changelog: List<Change>)
 
         val info = when(platform.lowercase()) {
             "paper" -> {
@@ -226,7 +226,7 @@ class RCONController: DisposableBean {
             val updateAvailable = info != null
             val latestVersion = info?.version
             val downloadUrl = info?.downloadUrl
-            val changes = info?.changes
+            val changelog = info?.changelog
         }
     }
 
