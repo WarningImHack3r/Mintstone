@@ -40,14 +40,11 @@ class RCONController: DisposableBean {
     }
 
     // --- Helper functions ---
-    private fun getServerParams(params: ObjectNode): RconDetails {
-        val serverAddress = if (params.has("serverAddress")) params["serverAddress"] else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: serverAddress")
-        val serverPassword = if (params.has("serverPassword")) params["serverPassword"] else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: serverPassword")
-
+    private fun getServerParams(serverAddress: String, serverPort: String?, serverPassword: String): RconDetails {
         return RconDetails(
-            serverAddress.textValue(),
-            params["serverPort"]?.intValue() ?: 25575,
-            serverPassword.textValue()
+            serverAddress,
+            serverPort?.toInt() ?: 25575,
+            serverPassword
         )
     }
 
@@ -76,9 +73,8 @@ class RCONController: DisposableBean {
         return newConnection
     }
 
-    private fun sendCommandFromParams(params: ObjectNode, command: ICommand): String {
-        val serverParams = getServerParams(params)
-        val connection = connectOrGetConnection(serverParams)
+    private fun sendCommandFromParams(params: RconDetails, command: ICommand): String {
+        val connection = connectOrGetConnection(params)
 
         val response = connection.minecraftRcon().orElseThrow {
             ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Unable to get RCON connection")
@@ -97,9 +93,13 @@ class RCONController: DisposableBean {
 
     // --- General commands ---
     @GetMapping("/ping")
-    fun pingServer(@RequestBody params: ObjectNode): Any {
+    fun pingServer(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ): Any {
         try {
-            connectOrGetConnection(getServerParams(params))
+            connectOrGetConnection(getServerParams(serverAddress, serverPort, serverPassword))
             return object {
                 val status = "success"
             }
@@ -109,16 +109,36 @@ class RCONController: DisposableBean {
     }
 
     @PostMapping("/stop")
-    fun stopServer(@RequestBody params: ObjectNode) = wrapInObject {
-        sendCommandFromParams(params, StopCommand())
+    fun stopServer(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ) = wrapInObject {
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), StopCommand())
     }
 
     @GetMapping("/version")
-    fun getServerVersion(@RequestBody params: ObjectNode): Any = sendCommandFromParams(params) { "version" }.let { response ->
+    fun getServerVersion(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ): Any = sendCommandFromParams(getServerParams(
+        serverAddress,
+        serverPort,
+        serverPassword
+    )) { "version" }.let { response ->
         if (response.lowercase().contains("checking version")) {
             log.info("Server is still checking version, waiting 100ms and trying again")
             Thread.sleep(100)
-            getServerVersion(params)
+            getServerVersion(
+                serverAddress,
+                serverPort,
+                serverPassword
+            )
         } else object {
             val status = "success"
             val platform = with(response) {
@@ -142,12 +162,11 @@ class RCONController: DisposableBean {
     }
 
     @PostMapping("/check-for-updates")
-    fun checkForUpdates(
-        @RequestBody params: ObjectNode,
-        @RequestParam platform: String,
-        @RequestParam("serverVersion") platformVersion: String,
-        @RequestParam gameVersion: String
-    ): Any {
+    fun checkForUpdates(@RequestBody params: ObjectNode): Any {
+        val platform = if (params.has("platform")) params["platform"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: platform")
+        val platformVersion = if (params.has("serverVersion")) params["serverVersion"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: platformVersion")
+        val gameVersion = if (params.has("gameVersion")) params["gameVersion"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: gameVersion")
+
         fun makeAPICall(url: String): JsonObject? {
             val response = try {
                 HttpClient.newHttpClient()
@@ -181,12 +200,12 @@ class RCONController: DisposableBean {
                 }
                 val newBuilds = makeAPICall("https://api.papermc.io/v2/projects/paper/versions/$gameVersion/builds")
                     ?.get("builds")?.asJsonArray?.filter { build ->
-                        build.asJsonObject.get("build").asInt > paperVersion
+                        build.asJsonObject["build"].asInt > paperVersion
                     } ?: emptyList()
                 val changes = newBuilds.map { build ->
                         val buildObject = build.asJsonObject
-                        Change(buildObject.get("build").asString, buildObject.get("changes").asJsonArray.map { change ->
-                            change.asJsonObject.get("message").asString.trim()
+                        Change(buildObject["build"].asString, buildObject["changes"].asJsonArray.map { change ->
+                            change.asJsonObject["message"].asString.trim()
                         })
                     }.reversed()
                 if (newBuilds.isEmpty()) null else NewVersion(
@@ -214,9 +233,17 @@ class RCONController: DisposableBean {
 
     // --- Dashboard commands ---
     @GetMapping("/playerslist")
-    fun getPlayersList(@RequestBody params: ObjectNode) = object {
+    fun getPlayersList(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ) = object {
         val status = "success"
-        val players = sendCommandFromParams(params, PlayerListCommand.uuids())
+        val players = sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), PlayerListCommand.uuids())
             .split(", ")
             .map { playerLine ->
                 val filteredLine = playerLine
@@ -234,76 +261,149 @@ class RCONController: DisposableBean {
     // --- Player commands ---
     @PostMapping("/kick")
     fun kickPlayer(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String,
-        @RequestParam("reason") kickReason: Optional<String>
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, KickCommand(Target.player(playerName), kickReason.orElse(null)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), KickCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ), params["reason"]?.textValue()))
     }
 
     @PostMapping("/ban")
     fun banPlayer(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String,
-        @RequestParam("reason") banReason: Optional<String>
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, BanCommand(Target.player(playerName), banReason.orElse(null)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), BanCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ),
+            params["reason"]?.textValue()
+        ))
     }
 
     @PostMapping("/ban-ip")
     fun banPlayerIp(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String,
-        @RequestParam("reason") banReason: Optional<String>
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, BanIpCommand(Target.player(playerName), banReason.orElse(null)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), BanIpCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ),
+            params["reason"]?.textValue()
+        ))
     }
 
     @PostMapping("/pardon")
     fun pardonPlayer(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
         @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
     ) = wrapInObject {
-        sendCommandFromParams(params, PardonCommand(Target.player(playerName)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), PardonCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        )))
     }
 
     @PostMapping("/kill")
     fun killPlayer(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, KillCommand(Target.player(playerName)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), KillCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        )))
     }
 
     @PostMapping("/op")
     fun opPlayer(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, OpCommand(Target.player(playerName)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), OpCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        )))
     }
 
     @PostMapping("/deop")
     fun deopPlayer(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, DeOpCommand(Target.player(playerName)))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), DeOpCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        )))
     }
 
     @PostMapping("/whitelist-add")
     fun addToWhitelist(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, WhiteListCommand(Target.player(playerName), WhiteListMode.Targeted.ADD))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), WhiteListCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ), WhiteListMode.Targeted.ADD))
     }
 
     @PostMapping("/whitelist-remove")
     fun removeFromWhitelist(
-        @RequestBody params: ObjectNode,
-        @RequestParam("player") playerName: String
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode
     ) = wrapInObject {
-        sendCommandFromParams(params, WhiteListCommand(Target.player(playerName), WhiteListMode.Targeted.REMOVE))
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), WhiteListCommand(Target.player(
+            if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ), WhiteListMode.Targeted.REMOVE))
     }
 }
