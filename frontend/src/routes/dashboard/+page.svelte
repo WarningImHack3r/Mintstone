@@ -1,9 +1,17 @@
 <script lang="ts">
-	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
-	import { AlertCircleIcon, BoxIcon, InfoIcon, PlusIcon, RefreshCwIcon, XCircleIcon, XIcon } from "svelte-feather-icons";
-	import type { Query, UpdateCheck, Version } from "$lib/utils/BackendTypes";
-	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
 	import { onMount } from "svelte";
+	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
+	import {
+		AlertCircleIcon,
+		BoxIcon,
+		InfoIcon,
+		PlusIcon,
+		RefreshCwIcon,
+		XCircleIcon,
+		XIcon
+	} from "svelte-feather-icons";
+	import type { Query, QueryResult, UpdateCheck, Version } from "$lib/utils/BackendTypes";
+	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
 	import { serversDb } from "$lib/db/stores";
 
 	// Stores
@@ -16,7 +24,7 @@
 	// Initial state
 	let initialCheckDone: boolean | undefined = undefined;
 	let serverVersion: Version;
-	let query: Query;
+	let query: QueryResult;
 	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
 	$: if (currentServer) {
 		loadServer();
@@ -48,11 +56,13 @@
 		initialCheckDone = true;
 
 		if (serverVersion) {
-			query = await api<Query>(
-				`/query?${new URLSearchParams({
-					server: currentServer.address
-				})}`
-			);
+			query = (
+				await api<Query>(
+					`/query?${new URLSearchParams({
+						server: currentServer.address
+					})}`
+				)
+			).query;
 			updateResult = await api<UpdateCheck>(
 				`/rcon/check-for-updates?${new URLSearchParams({
 					serverAddress: currentServer.address,
@@ -66,16 +76,14 @@
 					body: JSON.stringify({
 						platform: serverVersion.platform,
 						serverVersion: serverVersion.version,
-						gameVersion: query.query.version.name.split(" ")[1]
+						gameVersion: query.version.name.split(" ")[1]
 					})
 				}
 			);
 		}
 	}
 
-	onMount(() => {
-		loadServer();
-	});
+	onMount(loadServer);
 </script>
 
 <svelte:head>
@@ -247,7 +255,7 @@
 	{#await getMinecraftVersions() then versions}
 		{@const versionsString = versions.map(v => v.versionString)}
 		{#if query && !closedMinecraftVersions.includes(versions[0].versionString) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
-			{@const gameVersion = query.query.version.name.split(" ")[1]}
+			{@const gameVersion = query.version.name.split(" ")[1]}
 			{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
 				{@const newestVersion = versions[0]}
 				<aside class="alert variant-ghost-secondary">
@@ -322,7 +330,7 @@
 	{/await}
 
 	<div class="p-8">
-		<h2 class="h2">{currentServer.name}</h2>
+		<h2 class="h2 pb-8">{currentServer.name}</h2>
 	</div>
 {:else}
 	<div class="flex h-full w-full flex-col items-center justify-center">
