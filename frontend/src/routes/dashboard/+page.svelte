@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { AlertCircleIcon, InfoIcon, PlusIcon, XCircleIcon, XIcon } from "svelte-feather-icons";
-	import type { UpdateCheck, Version } from "$lib/utils/BackendTypes";
+	import type { Query, UpdateCheck, Version } from "$lib/utils/BackendTypes";
 	import { api } from "$lib/utils/backendCaller";
 	import { onMount } from "svelte";
 	import { serversDb } from "$lib/db/stores";
@@ -14,8 +14,7 @@
 	// Initial state
 	let initialCheckDone: boolean | undefined = undefined;
 	let serverVersion: Version;
-	$: currentServer =
-		$serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
+	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
 	$: if (currentServer) {
 		loadServer();
 	}
@@ -27,7 +26,7 @@
 		updateResult && updateResult.status === "success" && updateResult.updateAvailable
 			? !closedVersions.includes(updateResult.latestVersion) && !$neverUpdatesStore
 			: !$neverUpdatesStore;
-	
+
 	async function loadServer() {
 		if (!currentServer) return;
 		initialCheckDone = false;
@@ -55,7 +54,11 @@
 					body: JSON.stringify({
 						platform: serverVersion.platform,
 						serverVersion: serverVersion.version,
-						gameVersion: currentServer.gameVersion
+						gameVersion: (await api<Query>(
+							`/query?${new URLSearchParams({
+								server: currentServer.address
+							})}`
+						)).query.version.name.split(" ")[1]
 					})
 				}
 			);
