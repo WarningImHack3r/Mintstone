@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
-	import { AlertCircleIcon, InfoIcon, PlusIcon, XCircleIcon, XIcon } from "svelte-feather-icons";
+	import { AlertCircleIcon, BoxIcon, InfoIcon, PlusIcon, RefreshCwIcon, XCircleIcon, XIcon } from "svelte-feather-icons";
 	import type { Query, UpdateCheck, Version } from "$lib/utils/BackendTypes";
 	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
 	import { onMount } from "svelte";
@@ -252,7 +252,7 @@
 				{@const newestVersion = versions[0]}
 				<aside class="alert variant-ghost-secondary">
 					<div>
-						<InfoIcon />
+						<BoxIcon />
 					</div>
 					<div class="alert-message">
 						<p>
@@ -328,5 +328,11 @@
 	<div class="flex h-full w-full flex-col items-center justify-center">
 		<p class="pb-16 text-9xl font-bold opacity-50">:(</p>
 		<h2 class="h2">Server unreachable</h2>
+		<button class="variant-filled btn gap-1 mt-8" on:click={() => loadServer()}>
+			<span>
+				<RefreshCwIcon />
+			</span>
+			<span>Retry</span>
+		</button>
 	</div>
 {/if}
