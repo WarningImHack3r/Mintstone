@@ -28,7 +28,6 @@ type Platform = "Paper" | "Spigot" | "Bukkit" | "Vanilla" | "Unknown";
 export type Server = {
     id: string;
     name: string;
-    icon?: string;
     address: string;
     password: string;
     rconPort?: number;

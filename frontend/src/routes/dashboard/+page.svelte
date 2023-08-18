@@ -13,6 +13,7 @@
 	import type { Query, QueryResult, UpdateCheck, Version } from "$lib/utils/BackendTypes";
 	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
 	import { serversDb } from "$lib/db/stores";
+	import DashboardOverview from "$lib/components/dashboard/DashboardOverview.svelte";
 
 	// Stores
 	const modalStore = getModalStore();
@@ -110,7 +111,7 @@
 		<h2 class="h2">Loading your server...</h2>
 		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
 	</div>
-{:else if serverVersion && currentServer}
+{:else if serverVersion && currentServer && query}
 	{#if showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
 		<aside class="alert variant-ghost-warning">
 			<div>
@@ -329,14 +330,14 @@
 		{/if}
 	{/await}
 
-	<div class="p-8">
-		<h2 class="h2 pb-8">{currentServer.name}</h2>
-	</div>
+	<main class="p-8">
+		<DashboardOverview instance={currentServer} platform={serverVersion} fetchedData={query} />
+	</main>
 {:else}
 	<div class="flex h-full w-full flex-col items-center justify-center">
 		<p class="pb-16 text-9xl font-bold opacity-50">:(</p>
 		<h2 class="h2">Server unreachable</h2>
-		<button class="variant-filled btn gap-1 mt-8" on:click={() => loadServer()}>
+		<button class="variant-filled btn mt-8 gap-1" on:click={() => loadServer()}>
 			<span>
 				<RefreshCwIcon />
 			</span>

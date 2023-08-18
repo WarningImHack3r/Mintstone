@@ -2,6 +2,7 @@
 	import { serversDb } from "$lib/db/stores";
 	import { getDrawerStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
+	import { api } from "$lib/utils/apiCaller";
 
 	function serverSelected(target: EventTarget | null, index: number) {
 		$serverIndexStore = index;
@@ -16,6 +17,9 @@
 
 		getDrawerStore().close();
 	}
+
+	// Disable errors due to no TS in markup (https://github.com/sveltejs/language-tools/issues/1026#issuecomment-1002839154)
+	const disableTypeCheck = (fn: any) => fn;
 
 	let editMode = false;
 	const serverIndexStore = localStorageStore("serverIndex", 0);
@@ -59,14 +63,14 @@
 				<li class={editMode ? "" : "child:w-full"}>
 					{#if editMode}
 						<div class="list-option">
-							<span class="variant-soft-tertiary badge-icon p-4">
-								{#if server.icon}
-									<img src={server.icon} alt={server.name} />
-								{:else}
-									{server.name.length > 0 ? server.name[0].toUpperCase() : "?"}
-								{/if}
+							<span class="variant-soft-tertiary badge-icon p-1">
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams({
+									server: server.address
+								})}`)) then query}
+									<img src={query.query.favicon} alt={server.name} />
+								{/await}
 							</span>
-							<span>
+							<span class="text-left">
 								<dt class="font-bold">{server.name}</dt>
 								<dd class="text-sm opacity-50">{server.address}</dd>
 							</span>
@@ -86,14 +90,14 @@
 							class={index === $serverIndexStore ? "!variant-soft-primary" : ""}
 							on:click={e => serverSelected(e.target, index)}
 						>
-							<span class="variant-soft-tertiary badge-icon p-4">
-								{#if server.icon}
-									<img src={server.icon} alt={server.name} />
-								{:else}
-									{server.name.length > 0 ? server.name[0].toUpperCase() : "?"}
-								{/if}
+							<span class="variant-soft-tertiary badge-icon p-1">
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams({
+									server: server.address
+								})}`)) then query}
+									<img src={query.query.favicon} alt={server.name} />
+								{/await}
 							</span>
-							<span>
+							<span class="text-left">
 								<dt class="font-bold">{server.name}</dt>
 								<dd class="text-sm opacity-50">{server.address}</dd>
 							</span>

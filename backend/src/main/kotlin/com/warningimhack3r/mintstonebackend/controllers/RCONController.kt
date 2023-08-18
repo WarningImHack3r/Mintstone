@@ -121,6 +121,19 @@ class RCONController: DisposableBean {
         ), StopCommand())
     }
 
+    @PostMapping("/reload")
+    fun reloadServer(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ) = wrapInObject {
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), ReloadCommand())
+    }
+
     @GetMapping("/version")
     fun getServerVersion(
         @RequestParam serverAddress: String,
