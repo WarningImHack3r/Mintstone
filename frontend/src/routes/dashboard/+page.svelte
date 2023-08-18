@@ -2,18 +2,21 @@
 	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { AlertCircleIcon, InfoIcon, PlusIcon, XCircleIcon, XIcon } from "svelte-feather-icons";
 	import type { Query, UpdateCheck, Version } from "$lib/utils/BackendTypes";
-	import { api } from "$lib/utils/backendCaller";
+	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
 	import { onMount } from "svelte";
 	import { serversDb } from "$lib/db/stores";
 
 	// Stores
 	const modalStore = getModalStore();
-	const neverUpdatesStore = localStorageStore("neverShowUpdates", false);
+	const neverServerUpdatesStore = localStorageStore("neverShowServerUpdates", false);
+	const _initialArrayStore: number[] = []; // for the store to be initialized as number[] instead of never[]
+	const ignoreMCUpdatesStore = localStorageStore("ignoreMinecraftUpdates", _initialArrayStore);
 	const serverIndexStore = localStorageStore("serverIndex", 0);
 
 	// Initial state
 	let initialCheckDone: boolean | undefined = undefined;
 	let serverVersion: Version;
+	let query: Query;
 	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
 	$: if (currentServer) {
 		loadServer();
@@ -21,11 +24,15 @@
 
 	// Check for updates
 	let updateResult: UpdateCheck;
-	let closedVersions: string[] = [];
-	$: showUpdates =
+	let closedServerVersions: Record<string, string> = {};
+	$: showServerUpdates =
 		updateResult && updateResult.status === "success" && updateResult.updateAvailable
-			? !closedVersions.includes(updateResult.latestVersion) && !$neverUpdatesStore
-			: !$neverUpdatesStore;
+			? closedServerVersions[updateResult.latestVersion] !== serverVersion.platform &&
+			  !$neverServerUpdatesStore
+			: !$neverServerUpdatesStore;
+
+	// Minecraft versions
+	let closedMinecraftVersions: string[] = [];
 
 	async function loadServer() {
 		if (!currentServer) return;
@@ -41,6 +48,11 @@
 		initialCheckDone = true;
 
 		if (serverVersion) {
+			query = await api<Query>(
+				`/query?${new URLSearchParams({
+					server: currentServer.address
+				})}`
+			);
 			updateResult = await api<UpdateCheck>(
 				`/rcon/check-for-updates?${new URLSearchParams({
 					serverAddress: currentServer.address,
@@ -54,11 +66,7 @@
 					body: JSON.stringify({
 						platform: serverVersion.platform,
 						serverVersion: serverVersion.version,
-						gameVersion: (await api<Query>(
-							`/query?${new URLSearchParams({
-								server: currentServer.address
-							})}`
-						)).query.version.name.split(" ")[1]
+						gameVersion: query.query.version.name.split(" ")[1]
 					})
 				}
 			);
@@ -95,7 +103,7 @@
 		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
 	</div>
 {:else if serverVersion && currentServer}
-	{#if showUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
+	{#if showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
 		<aside class="alert variant-ghost-warning">
 			<div>
 				<InfoIcon />
@@ -113,7 +121,7 @@
 					target="_blank"
 					on:click={() => {
 						if (updateResult.status === "success" && updateResult.updateAvailable) {
-							closedVersions = [...closedVersions, updateResult.latestVersion];
+							closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 						}
 					}}
 				>
@@ -182,14 +190,14 @@
 					class="btn-icon"
 					use:popup={{
 						event: "click",
-						target: "dismissUpdateAlert"
+						target: "dismissServerUpdateAlert"
 					}}
 				>
 					<XIcon />
 				</button>
 			</div>
 		</aside>
-		<div class="card w-60 p-2 shadow-xl" data-popup="dismissUpdateAlert">
+		<div class="card w-60 p-2 shadow-xl" data-popup="dismissServerUpdateAlert">
 			<div class="bg-surface-100-800-token arrow" />
 			<nav class="list-nav">
 				<ul>
@@ -198,7 +206,7 @@
 							type="button"
 							on:click={() => {
 								if (updateResult.status === "success" && updateResult.updateAvailable) {
-									closedVersions = [...closedVersions, updateResult.latestVersion];
+									closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 								}
 							}}
 						>
@@ -220,7 +228,7 @@
 									body: "You will never see any update alerts again.",
 									response: r => {
 										if (r) {
-											neverUpdatesStore.set(true);
+											$neverServerUpdatesStore = true;
 										}
 									}
 								})}
@@ -235,6 +243,83 @@
 			</nav>
 		</div>
 	{/if}
+
+	{#await getMinecraftVersions() then versions}
+		{@const versionsString = versions.map(v => v.versionString)}
+		{#if query && !closedMinecraftVersions.includes(versions[0].versionString) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
+			{@const gameVersion = query.query.version.name.split(" ")[1]}
+			{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
+				{@const newestVersion = versions[0]}
+				<aside class="alert variant-ghost-secondary">
+					<div>
+						<InfoIcon />
+					</div>
+					<div class="alert-message">
+						<p>
+							A new <strong>Minecraft</strong> version ({newestVersion.versionString}) is available!
+						</p>
+					</div>
+					<div class="alert-actions">
+						<button
+							type="button"
+							class="btn-icon"
+							use:popup={{
+								event: "click",
+								target: "dismissMinecraftUpdateAlert"
+							}}
+						>
+							<XIcon />
+						</button>
+					</div>
+				</aside>
+				<div class="card w-60 p-2 shadow-xl" data-popup="dismissMinecraftUpdateAlert">
+					<div class="bg-surface-100-800-token arrow" />
+					<nav class="list-nav">
+						<ul>
+							<li class="child:w-full">
+								<button
+									type="button"
+									on:click={() =>
+										(closedMinecraftVersions = [
+											...closedMinecraftVersions,
+											newestVersion.versionString
+										])}
+								>
+									<span class="badge">
+										<XIcon />
+									</span>
+									<span>Close</span>
+								</button>
+							</li>
+							<hr />
+							<li class="child:w-full">
+								<button
+									type="button"
+									class="text-error-500 hover:!bg-error-backdrop-token"
+									on:click={() =>
+										modalStore.trigger({
+											type: "confirm",
+											title: "Are you sure?",
+											body: "All future Minecraft updates will be ignored <strong>for this server</strong>.",
+											response: r => {
+												if (r) {
+													$ignoreMCUpdatesStore = [...$ignoreMCUpdatesStore, $serverIndexStore];
+												}
+											}
+										})}
+								>
+									<span class="badge">
+										<XCircleIcon />
+									</span>
+									<span>Never show again</span>
+								</button>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			{/if}
+		{/if}
+	{/await}
 
 	<div class="p-8">
 		<h2 class="h2">{currentServer.name}</h2>
