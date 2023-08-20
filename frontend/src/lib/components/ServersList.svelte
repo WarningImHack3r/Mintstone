@@ -4,6 +4,8 @@
 	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
 	import { api } from "$lib/utils/apiCaller";
 
+	const drawerStore = getDrawerStore();
+
 	function serverSelected(target: EventTarget | null, index: number) {
 		$serverIndexStore = index;
 
@@ -15,7 +17,7 @@
 			return;
 		}
 
-		getDrawerStore().close();
+		drawerStore.close();
 	}
 
 	// Disable errors due to no TS in markup (https://github.com/sveltejs/language-tools/issues/1026#issuecomment-1002839154)
@@ -33,7 +35,7 @@
 		<div class="flex gap-0">
 			{#if !editMode}
 			<!-- TODO: link to /new -->
-				<a href="/" class="btn btn-icon" on:click={getDrawerStore().close}>
+				<a href="/" class="btn btn-icon" on:click={drawerStore.close}>
 					<span>
 						<PlusIcon class="h-4" />
 					</span>
