@@ -64,10 +64,10 @@
 					{#if editMode}
 						<div class="list-option">
 							<span class="variant-soft-tertiary badge-icon p-1">
-								{#await disableTypeCheck(api(`/query?${new URLSearchParams({
-									server: server.address
-								})}`)) then query}
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`)) then query}
 									<img src={query.query.favicon} alt={server.name} />
+								{:catch}
+									{server.name[0].toUpperCase()}
 								{/await}
 							</span>
 							<span class="text-left">
@@ -91,10 +91,10 @@
 							on:click={e => serverSelected(e.target, index)}
 						>
 							<span class="variant-soft-tertiary badge-icon p-1">
-								{#await disableTypeCheck(api(`/query?${new URLSearchParams({
-									server: server.address
-								})}`)) then query}
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`)) then query}
 									<img src={query.query.favicon} alt={server.name} />
+								{:catch}
+									{server.name[0].toUpperCase()}
 								{/await}
 							</span>
 							<span class="text-left">

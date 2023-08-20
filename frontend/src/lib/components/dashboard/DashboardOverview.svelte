@@ -14,14 +14,14 @@
 <div class="flex items-center justify-between">
 	<!-- Left part -->
 	<div class="flex items-center gap-4">
-        <!-- Logo -->
-        <div class="card rounded-full p-4 shadow-md">
-            <img src={fetchedData.favicon} alt="Logo for {instance.name}" />
-        </div>
+		<!-- Logo -->
+		<div class="card rounded-full p-4 shadow-md">
+			<img src={fetchedData.favicon} alt="Logo for {instance.name}" />
+		</div>
 		<!-- Info -->
 		<div class="flex flex-col gap-2">
 			<div class="flex items-baseline gap-4">
-				<h2 class="h2">{instance.name}</h2>
+				<a href="/" class="h2 font-bold underline-offset-4 hover:underline">{instance.name}</a>
 				<span class="flex items-center gap-2 opacity-50">
 					{fetchedData.players.online} / {fetchedData.players.max}
 					<UsersIcon class="inline-block h-4 w-4" />
