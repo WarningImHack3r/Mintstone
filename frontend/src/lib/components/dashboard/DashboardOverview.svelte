@@ -21,6 +21,7 @@
 		<!-- Info -->
 		<div class="flex flex-col gap-2">
 			<div class="flex items-baseline gap-4">
+				<!-- TODO: go to /servers/x -->
 				<a href="/" class="h2 font-bold underline-offset-4 hover:underline">{instance.name}</a>
 				<span class="flex items-center gap-2 opacity-50">
 					{fetchedData.players.online} / {fetchedData.players.max}

@@ -129,7 +129,13 @@
 					<UserIcon />
 				</button>
 
-				<button type="button" class="btn-icon-md btn-icon">
+				<button
+					type="button"
+					class="btn-icon-md btn-icon"
+					on:click={() => {
+						// TODO: go to /settings
+					}}
+				>
 					<SettingsIcon />
 				</button>
 			</svelte:fragment>
@@ -138,6 +144,7 @@
 				<nav class="list-nav">
 					<ul>
 						<li>
+							<!-- TODO: go to /profile -->
 							<a href="/">
 								<span class="badge">
 									<UserIcon />
@@ -147,6 +154,7 @@
 						</li>
 						<hr />
 						<li>
+							<!-- TODO: go to /logout -->
 							<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
 								<span class="badge">
 									<LogOutIcon />

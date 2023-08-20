@@ -32,7 +32,8 @@
 		<h3 class="h3">Servers</h3>
 		<div class="flex gap-0">
 			{#if !editMode}
-				<a href="/" class="btn btn-icon" on:click={() => getDrawerStore().close()}>
+			<!-- TODO: link to /new -->
+				<a href="/" class="btn btn-icon" on:click={getDrawerStore().close}>
 					<span>
 						<PlusIcon class="h-4" />
 					</span>
@@ -87,6 +88,7 @@
 						</div>
 					{:else}
 						<button
+							type="button"
 							class={index === $serverIndexStore ? "!variant-soft-primary" : ""}
 							on:click={e => serverSelected(e.target, index)}
 						>
@@ -108,6 +110,7 @@
 						<nav class="list-nav">
 							<ul>
 								<li>
+									<!-- TODO: go to /servers/x/edit? -->
 									<a href="/">
 										<span class="badge">
 											<EditIcon />
@@ -117,6 +120,7 @@
 								</li>
 								<hr />
 								<li>
+									<!-- TODO: button to remove from db -->
 									<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
 										<span class="badge">
 											<TrashIcon />

@@ -99,6 +99,7 @@
 			Add your first server now! You're only a few clicks away from great powers (and great
 			responsibilities).
 		</h3>
+		<!-- TODO: link to /new -->
 		<a href="/" class="variant-filled btn mt-8">
 			<span>
 				<PlusIcon />
@@ -108,6 +109,7 @@
 	</div>
 {:else if initialCheckDone === false}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
+		<!-- TODO: loading icon -->
 		<h2 class="h2">Loading your server...</h2>
 		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
 	</div>
@@ -337,7 +339,7 @@
 	<div class="flex h-full w-full flex-col items-center justify-center">
 		<p class="pb-16 text-9xl font-bold opacity-50">:(</p>
 		<h2 class="h2">Server unreachable</h2>
-		<button class="variant-filled btn mt-8 gap-1" on:click={() => loadServer()}>
+		<button type="button" class="variant-filled btn mt-8 gap-1" on:click={loadServer}>
 			<span>
 				<RefreshCwIcon />
 			</span>
