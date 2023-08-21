@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+msg=$(cat "$1")
+# If commit message doesn't start with "[" and doesn't contain "]", then abort
+if ! echo "$msg" | grep -q "^\[.*\].*"; then
+    echo "Commit message must start with [ and contain a ]"
+    exit 1
+fi

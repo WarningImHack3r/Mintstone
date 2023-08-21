@@ -9,6 +9,7 @@ Comprehensive web admin panel for self-hosted Minecraft servers. Supports all se
 - Server management
 - Support for multiple servers
 - Server updates monitoring and notifications
+- ...and more!
 
 ## Planned Features
 
@@ -16,7 +17,8 @@ Comprehensive web admin panel for self-hosted Minecraft servers. Supports all se
 - Server monitoring
 - Plugin monitoring
 - Support for all server types (Vanilla, Spigot, Paper, etc.)
-- ...and more!
+
+You can see the full list of planned features [in the Projects tab](https://github.com/WarningImHack3r/Mintstone/projects).
 
 ## Setup
 

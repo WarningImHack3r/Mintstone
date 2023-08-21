@@ -9,7 +9,8 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"prepare": "cd .. && husky install"
 	},
 	"devDependencies": {
 		"@floating-ui/dom": "^1.5.1",
@@ -25,6 +26,7 @@
 		"eslint": "^8.47.0",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-svelte": "^2.32.4",
+		"husky": "^8.0.3",
 		"postcss": "^8.4.28",
 		"prettier": "^3.0.2",
 		"prettier-plugin-svelte": "^3.0.3",
