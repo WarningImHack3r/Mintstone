@@ -83,6 +83,11 @@ class RCONController: DisposableBean {
         return newConnection
     }
 
+    private fun stopAndRemoveConnection(details: RconDetails) {
+        connections[details.hostname]?.disconnect()
+        connections.remove(details.hostname)
+    }
+
     private fun sendCommandFromParams(params: RconDetails, command: ICommand): String {
         val connection = connectOrGetConnection(params)
 
@@ -123,12 +128,16 @@ class RCONController: DisposableBean {
         @RequestParam serverAddress: String,
         @RequestParam(required = false) serverPort: String?,
         @RequestParam serverPassword: String
-    ) = wrapInObject {
-        sendCommandFromParams(getServerParams(
-            serverAddress,
-            serverPort,
-            serverPassword
-        ), StopCommand())
+    ) = getServerParams(
+        serverAddress,
+        serverPort,
+        serverPassword
+    ).also { details ->
+        stopAndRemoveConnection(details)
+    }.let { details ->
+        wrapInObject {
+            sendCommandFromParams(details, StopCommand())
+        }
     }
 
     @PostMapping("/reload")
