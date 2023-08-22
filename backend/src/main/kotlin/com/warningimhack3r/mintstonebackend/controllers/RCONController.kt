@@ -21,7 +21,6 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
-import java.util.*
 
 @RestController
 @RequestMapping("/rcon")
@@ -29,7 +28,9 @@ class RCONController: DisposableBean {
 
     private val log = LoggerFactory.getLogger(RCONController::class.java)
     private var connections = HashMap<String, MinecraftRconService>()
+    private var connectionsEstablishing: MutableList<RconDetails> = mutableListOf()
 
+    // --- Lifecycle functions ---
     override fun destroy() {
         if (connections.isNotEmpty()) {
             log.info("Disconnecting from ${connections.size} RCON ${if (connections.size == 1) "server" else "servers"}")
@@ -64,11 +65,20 @@ class RCONController: DisposableBean {
     private fun connectOrGetConnection(details: RconDetails): MinecraftRconService {
         if (connections.containsKey(details.hostname)) {
             val currentConnection = connections[details.hostname]
-            if (currentConnection?.isConnected == true) {
-                return currentConnection
+            return if (currentConnection?.isConnected == true) {
+                currentConnection
+            } else {
+                Thread.sleep(200)
+                connectOrGetConnection(details)
             }
         }
+        if (connectionsEstablishing.contains(details)) {
+            Thread.sleep(200)
+            return connectOrGetConnection(details)
+        }
+        connectionsEstablishing.add(details)
         val newConnection = connectToServer(details)
+        connectionsEstablishing.remove(details)
         connections[details.hostname] = newConnection
         return newConnection
     }
