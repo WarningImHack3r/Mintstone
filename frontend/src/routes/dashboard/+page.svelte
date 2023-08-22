@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
+	import { ProgressRadial, getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import {
 		AlertCircleIcon,
 		BoxIcon,
@@ -109,7 +109,7 @@
 	</div>
 {:else if initialCheckDone === false}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
-		<!-- TODO: loading icon -->
+		<ProgressRadial stroke={100} meter="stroke-primary-500" track="stroke-primary-500/30" class="pb-8" />
 		<h2 class="h2">Loading your server...</h2>
 		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
 	</div>

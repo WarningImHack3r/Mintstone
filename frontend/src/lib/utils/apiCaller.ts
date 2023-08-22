@@ -1,5 +1,7 @@
+export const backendUrl = "http://localhost:8080";
+
 export async function api<T>(route: string, init?: Parameters<typeof fetch>[1]) {
-    const response = await fetch(`http://localhost:8080${route}`, init);
+    const response = await fetch(`${backendUrl}${route}`, init);
     if (!response.ok) {
         throw new Error(response.statusText);
     }

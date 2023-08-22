@@ -1,11 +1,13 @@
 <script lang="ts">
 	import "../app.css";
+	import { onMount } from "svelte";
 	import {
 		AppShell,
 		AppBar,
 		autoModeWatcher,
 		Drawer,
 		getDrawerStore,
+		getModalStore,
 		initializeStores,
 		localStorageStore,
 		Modal,
@@ -14,6 +16,7 @@
 	} from "@skeletonlabs/skeleton";
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
 	import { GithubIcon, LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
+	import { backendUrl } from "$lib/utils/apiCaller";
 	import ServersList from "$lib/components/ServersList.svelte";
 
 	// Handle stores
@@ -27,6 +30,7 @@
 	});
 	initializeStores();
 	const drawerStore = getDrawerStore();
+	const modalStore = getModalStore();
 
 	// Event handlers
 	function openDrawerOrSidebar() {
@@ -47,6 +51,26 @@
 
 	// Stores
 	const sidebarOpen = localStorageStore("sidebarOpen", true);
+
+	onMount(() => {
+		// Detect if backend is reachable
+		fetch(backendUrl, {
+			method: "HEAD"
+		}).catch(() => {
+			console.warn("Backend is not reachable!");
+			// Display a modal
+			modalStore.trigger({
+				type: "confirm",
+				title: "Backend is not reachable!",
+				body: "The application will not be able to work until the backend is reachable. Press 'Confirm' to reload the page and try again.<br />If the problem persists, try restarting the application.",
+				response: (r: boolean) => {
+					if (r) {
+						location.reload();
+					}
+				}
+			});
+		});
+	});
 </script>
 
 <svelte:head>
