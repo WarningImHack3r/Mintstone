@@ -11,7 +11,7 @@
 		XIcon
 	} from "svelte-feather-icons";
 	import type { Query, QueryResult, UpdateCheck, Version } from "$lib/utils/BackendTypes";
-	import { api, getMinecraftVersions } from "$lib/utils/apiCaller";
+	import { api, getMinecraftVersions, minecraftVersionFromProtocol } from "$lib/utils";
 	import { serversDb } from "$lib/db/stores";
 	import DashboardOverview from "$lib/components/dashboard/DashboardOverview.svelte";
 
@@ -42,6 +42,7 @@
 
 	// Minecraft versions
 	let closedMinecraftVersions: string[] = [];
+	let gameVersion: string;
 
 	async function loadServer() {
 		if (!currentServer) return;
@@ -64,6 +65,9 @@
 					})}`
 				)
 			).query;
+			gameVersion =
+				(await minecraftVersionFromProtocol(query.version.protocol)) ??
+				query.version.name.split(" ")[1];
 			updateResult = await api<UpdateCheck>(
 				`/rcon/check-for-updates?${new URLSearchParams({
 					serverAddress: currentServer.address,
@@ -77,7 +81,7 @@
 					body: JSON.stringify({
 						platform: serverVersion.platform,
 						serverVersion: serverVersion.version,
-						gameVersion: query.version.name.split(" ")[1]
+						gameVersion
 					})
 				}
 			);
@@ -109,7 +113,12 @@
 	</div>
 {:else if initialCheckDone === false}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
-		<ProgressRadial stroke={100} meter="stroke-primary-500" track="stroke-primary-500/30" class="pb-8" />
+		<ProgressRadial
+			stroke={100}
+			meter="stroke-primary-500"
+			track="stroke-primary-500/30"
+			class="pb-8"
+		/>
 		<h2 class="h2">Loading your server...</h2>
 		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
 	</div>
@@ -256,9 +265,8 @@
 	{/if}
 
 	{#await getMinecraftVersions() then versions}
-		{@const versionsString = versions.map(v => v.versionString)}
-		{#if query && !closedMinecraftVersions.includes(versions[0].versionString) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
-			{@const gameVersion = query.version.name.split(" ")[1]}
+		{@const versionsString = versions.map(v => v.id)}
+		{#if query && !closedMinecraftVersions.includes(versions[0].id) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
 			{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
 				{@const newestVersion = versions[0]}
 				<aside class="alert variant-ghost-secondary">
@@ -267,7 +275,7 @@
 					</div>
 					<div class="alert-message">
 						<p>
-							A new <strong>Minecraft</strong> version ({newestVersion.versionString}) is available!
+							A new <strong>Minecraft</strong> version ({newestVersion.id}) is available!
 						</p>
 					</div>
 					<div class="alert-actions">
@@ -291,10 +299,7 @@
 								<button
 									type="button"
 									on:click={() =>
-										(closedMinecraftVersions = [
-											...closedMinecraftVersions,
-											newestVersion.versionString
-										])}
+										(closedMinecraftVersions = [...closedMinecraftVersions, newestVersion.id])}
 								>
 									<span class="badge">
 										<XIcon />

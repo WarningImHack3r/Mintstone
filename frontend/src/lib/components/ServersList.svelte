@@ -2,7 +2,7 @@
 	import { serversDb } from "$lib/db/stores";
 	import { getDrawerStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
-	import { api } from "$lib/utils/apiCaller";
+	import { api } from "$lib/utils";
 
 	const drawerStore = getDrawerStore();
 

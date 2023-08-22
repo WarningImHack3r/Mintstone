@@ -16,7 +16,7 @@
 	} from "@skeletonlabs/skeleton";
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from "@floating-ui/dom";
 	import { GithubIcon, LogOutIcon, MenuIcon, SettingsIcon, UserIcon } from "svelte-feather-icons";
-	import { backendUrl } from "$lib/utils/apiCaller";
+	import { backendUrl } from "$lib/utils";
 	import ServersList from "$lib/components/ServersList.svelte";
 
 	// Handle stores

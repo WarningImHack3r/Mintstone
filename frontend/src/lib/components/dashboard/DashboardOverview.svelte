@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import type { QueryResult, Server, Version } from "$lib/utils/BackendTypes";
-	import { api } from "$lib/utils/apiCaller";
+	import { api, minecraftVersionFromProtocol } from "$lib/utils";
 	import { getModalStore } from "@skeletonlabs/skeleton";
 	import { PowerIcon, RefreshCwIcon, UsersIcon } from "svelte-feather-icons";
 
@@ -9,6 +10,12 @@
 	export let fetchedData: QueryResult;
 
 	const modalStore = getModalStore();
+	let badges = [platform.platform.toString()];
+
+	onMount(async () => {
+		const gameVersion = await minecraftVersionFromProtocol(fetchedData.version.protocol) ?? fetchedData.version.name.split(" ")[1];
+		badges = [...badges, gameVersion];
+	});
 </script>
 
 <div class="flex items-center justify-between">
@@ -29,7 +36,7 @@
 				</span>
 			</div>
 			<div class="flex gap-2">
-				{#each [platform.platform, fetchedData.version.name.split(" ")[1]] as badge}
+				{#each badges as badge}
 					<div class="variant-filled badge">{badge}</div>
 				{/each}
 			</div>
