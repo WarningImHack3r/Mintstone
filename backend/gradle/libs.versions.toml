@@ -1,6 +1,6 @@
 [versions]
-kotlin = "1.9.0"
-spring = "1.9.0"
+kotlin = "1.9.10"
+spring = "1.9.10"
 springBoot = "3.1.2"
 springDependencyManagement = "1.1.3"
 
