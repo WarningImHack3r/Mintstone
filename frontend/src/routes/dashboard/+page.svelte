@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { ProgressRadial, getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import {
 		AlertCircleIcon,
@@ -87,8 +86,6 @@
 			);
 		}
 	}
-
-	onMount(loadServer);
 </script>
 
 <svelte:head>
@@ -120,7 +117,17 @@
 			class="pb-8"
 		/>
 		<h2 class="h2">Loading your server...</h2>
-		<h3 class="h4 opacity-75">Hang tight! Some network requests have to be made.</h3>
+		<h3 class="h4 text-center opacity-75">
+			Hang tight! Some network requests have to be made.<br />This might take a few seconds.
+		</h3>
+		{#await new Promise(resolve => setTimeout(resolve, 10000)) then}
+			<button type="button" class="variant-filled btn mt-8 gap-1" on:click={() => location.reload()}>
+				<span>
+					<RefreshCwIcon />
+				</span>
+				<span>Reload the page</span>
+			</button>
+		{/await}
 	</div>
 {:else if serverVersion && currentServer && query}
 	{#if showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
@@ -338,7 +345,12 @@
 	{/await}
 
 	<main class="p-8">
-		<DashboardOverview instance={currentServer} platform={serverVersion} fetchedData={query} />
+		<DashboardOverview
+			instance={currentServer}
+			platform={serverVersion}
+			fetchedData={query}
+			on:server-stopped={loadServer}
+		/>
 	</main>
 {:else}
 	<div class="flex h-full w-full flex-col items-center justify-center">

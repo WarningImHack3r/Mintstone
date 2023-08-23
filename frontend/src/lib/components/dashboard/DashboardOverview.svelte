@@ -1,19 +1,27 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { createEventDispatcher, onMount } from "svelte";
 	import type { QueryResult, Server, Version } from "$lib/utils/BackendTypes";
 	import { api, minecraftVersionFromProtocol } from "$lib/utils";
-	import { getModalStore } from "@skeletonlabs/skeleton";
+	import { ProgressRadial, getModalStore } from "@skeletonlabs/skeleton";
 	import { PowerIcon, RefreshCwIcon, UsersIcon } from "svelte-feather-icons";
 
 	export let instance: Server;
 	export let platform: Version;
 	export let fetchedData: QueryResult;
 
+	const dispatch = createEventDispatcher<{
+		"server-stopped": undefined;
+	}>();
 	const modalStore = getModalStore();
 	let badges = [platform.platform.toString()];
 
+	let isStopping = false;
+	let isReloading = false;
+
 	onMount(async () => {
-		const gameVersion = await minecraftVersionFromProtocol(fetchedData.version.protocol) ?? fetchedData.version.name.split(" ")[1];
+		const gameVersion =
+			(await minecraftVersionFromProtocol(fetchedData.version.protocol)) ??
+			fetchedData.version.name.split(" ")[1];
 		badges = [...badges, gameVersion];
 	});
 </script>
@@ -51,14 +59,16 @@
 		<button
 			type="button"
 			class="variant-filled-error btn"
+			class:relative={isStopping}
 			on:click={() =>
 				modalStore.trigger({
 					type: "confirm",
 					title: "Stop server",
 					body: "Are you sure you want to stop this server? The connection will be lost until you start it again manually.",
-					response(r) {
+					async response(r) {
 						if (r) {
-							api(
+							isStopping = true;
+							await api(
 								`/rcon/stop?${new URLSearchParams({
 									serverAddress: instance.address,
 									serverPassword: instance.password
@@ -67,26 +77,33 @@
 									method: "POST"
 								}
 							);
+							isStopping = false;
+							setTimeout(() => dispatch("server-stopped"), 1500);
 						}
 					}
 				})}
 		>
-			<span>
+			{#if isStopping}
+				<ProgressRadial stroke={100} track="stroke-surface-500/70" width="w-8" class="!absolute" />
+			{/if}
+			<span class:invisible={isStopping}>
 				<PowerIcon />
 			</span>
-			<span>Stop</span>
+			<span class:invisible={isStopping}>Stop</span>
 		</button>
 		<button
 			type="button"
 			class="variant-filled btn"
+			class:relative={isReloading}
 			on:click={() =>
 				modalStore.trigger({
 					type: "confirm",
 					title: "Reload server",
 					body: "Are you sure you want to reload this server? It's often not useful and might cause issues.",
-					response(r) {
+					async response(r) {
 						if (r) {
-							api(
+							isReloading = true;
+							await api(
 								`/rcon/reload?${new URLSearchParams({
 									serverAddress: instance.address,
 									serverPassword: instance.password
@@ -95,14 +112,23 @@
 									method: "POST"
 								}
 							);
+							isReloading = false;
 						}
 					}
 				})}
 		>
-			<span>
+			{#if isReloading}
+				<ProgressRadial
+					stroke={100}
+					meter="stroke-surface-700 dark:stroke-surface-400"
+					width="w-8"
+					class="!absolute"
+				/>
+			{/if}
+			<span class:invisible={isReloading}>
 				<RefreshCwIcon />
 			</span>
-			<span>Reload</span>
+			<span class:invisible={isReloading}>Reload</span>
 		</button>
 	</div>
 </div>
