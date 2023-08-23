@@ -98,6 +98,14 @@ class RCONController: DisposableBean {
         return response.responseStringSanitized
     }
 
+    private fun sendAsyncCommandFromParams(params: RconDetails, command: ICommand, completion: Runnable = Runnable {}) {
+        val connection = connectOrGetConnection(params)
+
+        connection.minecraftRcon().orElseThrow {
+            ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Unable to get RCON connection")
+        }.sendAsync(completion, command)
+    }
+
     private fun wrapInObject(response: () -> String): Any {
         return object {
             val status = "success"
@@ -132,11 +140,9 @@ class RCONController: DisposableBean {
         serverAddress,
         serverPort,
         serverPassword
-    ).also { details ->
-        stopAndRemoveConnection(details)
-    }.let { details ->
-        wrapInObject {
-            sendCommandFromParams(details, StopCommand())
+    ).let { details ->
+        sendAsyncCommandFromParams(details, StopCommand()).also {
+            stopAndRemoveConnection(details)
         }
     }
 
