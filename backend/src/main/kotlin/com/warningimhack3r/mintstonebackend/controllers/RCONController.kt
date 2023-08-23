@@ -143,6 +143,10 @@ class RCONController: DisposableBean {
     ).let { details ->
         sendAsyncCommandFromParams(details, StopCommand()).also {
             stopAndRemoveConnection(details)
+        }.let {
+            wrapInObject {
+                "Stop command sent"
+            }
         }
     }
 
