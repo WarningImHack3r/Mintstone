@@ -295,8 +295,9 @@ class RCONController: DisposableBean {
                     val name = filteredLine.substringBefore(" ")
                     val uuid = filteredLine.substringAfter(" ")
                 }
+            }.filter { player ->
+                player.name.isNotEmpty() && player.uuid.isNotEmpty()
             }
-        val playersCount = players.size
     }
 
 
@@ -330,9 +331,7 @@ class RCONController: DisposableBean {
             serverPassword
         ), BanCommand(Target.player(
             if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
-        ),
-            params["reason"]?.textValue()
-        ))
+        ), params["reason"]?.textValue()))
     }
 
     @PostMapping("/ban-ip")
@@ -348,9 +347,45 @@ class RCONController: DisposableBean {
             serverPassword
         ), BanIpCommand(Target.player(
             if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
-        ),
-            params["reason"]?.textValue()
-        ))
+        ), params["reason"]?.textValue()))
+    }
+
+    @GetMapping("/banlist")
+    fun getBanlist(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ) = object {
+        val status = "success"
+        val banlist = sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), BanListCommand()).let { list ->
+            if (!list.contains(":")) {
+                emptyArray<String>()
+            } else {
+                list
+                    .substringAfter(":") // remove prefix
+                    // replace dots in IPs by | to avoid splitting on them
+                    .replace(Regex("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})"), "$1|$2|$3|$4")
+                    .replace(".", ".\n") // can now mark all dots as newlines
+                    // replace IPs back
+                    .replace(Regex("(\\d{1,3})\\|(\\d{1,3})\\|(\\d{1,3})\\|(\\d{1,3})"), "$1.$2.$3.$4")
+                    .split("\n") // split on newlines
+                    .filter { it.isNotBlank() } // remove empty lines
+                    .map { ban ->
+                        val banned = ban.substringBefore(" ")
+                        val notBanned = ban.substringAfter(" ")
+                        object {
+                            val name = if (banned.contains(".")) null else banned
+                            val ip = if (banned.contains(".")) banned else null
+                            val bannedBy = notBanned.substringBefore(":").substringAfterLast(" ")
+                            val reason = notBanned.substringAfter(":").trim()
+                        }
+                    }
+            }
+        }
     }
 
     @PostMapping("/pardon")
@@ -367,6 +402,21 @@ class RCONController: DisposableBean {
         ), PardonCommand(Target.player(
             if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
         )))
+    }
+
+    @PostMapping("/pardon-ip")
+    fun pardonPlayerIp(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String,
+        @RequestBody params: ObjectNode,
+    ) = wrapInObject {
+        sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), PardonIpCommand(if (params.has("ip")) params["ip"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
+        ))
     }
 
     @PostMapping("/kill")
@@ -417,7 +467,7 @@ class RCONController: DisposableBean {
         )))
     }
 
-    @PostMapping("/whitelist-add")
+    @PostMapping("/whitelist/add")
     fun addToWhitelist(
         @RequestParam serverAddress: String,
         @RequestParam(required = false) serverPort: String?,
@@ -433,7 +483,7 @@ class RCONController: DisposableBean {
         ), WhiteListMode.Targeted.ADD))
     }
 
-    @PostMapping("/whitelist-remove")
+    @PostMapping("/whitelist/remove")
     fun removeFromWhitelist(
         @RequestParam serverAddress: String,
         @RequestParam(required = false) serverPort: String?,
@@ -447,5 +497,25 @@ class RCONController: DisposableBean {
         ), WhiteListCommand(Target.player(
             if (params.has("player")) params["player"].textValue() else throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing required parameter: player")
         ), WhiteListMode.Targeted.REMOVE))
+    }
+
+    @GetMapping("/whitelist")
+    fun getWhitelist(
+        @RequestParam serverAddress: String,
+        @RequestParam(required = false) serverPort: String?,
+        @RequestParam serverPassword: String
+    ) = object {
+        val status = "success"
+        val whitelist = sendCommandFromParams(getServerParams(
+            serverAddress,
+            serverPort,
+            serverPassword
+        ), WhiteListCommand(WhiteListMode.Management.LIST))
+            .split(", ")
+            .map { playerLine ->
+                object {
+                    val name = playerLine.removePrefix(playerLine.substringBefore(":") + ":").trim()
+                }
+            }.filter { it.name.isNotEmpty() }
     }
 }
