@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from "svelte";
 	import type { QueryResult, Server, Version } from "$lib/utils/BackendTypes";
-	import { api, minecraftVersionFromProtocol } from "$lib/utils";
+	import { DEFAULT_RCON_PORT, api, minecraftVersionFromProtocol } from "$lib/utils";
 	import { ProgressRadial, getModalStore } from "@skeletonlabs/skeleton";
 	import { PowerIcon, RefreshCwIcon, UsersIcon } from "svelte-feather-icons";
 
@@ -71,6 +71,7 @@
 							await api(
 								`/rcon/stop?${new URLSearchParams({
 									serverAddress: instance.address,
+									serverPort: (instance.rconPort ?? DEFAULT_RCON_PORT).toString(),
 									serverPassword: instance.password
 								})}`,
 								{
@@ -106,6 +107,7 @@
 							await api(
 								`/rcon/reload?${new URLSearchParams({
 									serverAddress: instance.address,
+									serverPort: (instance.rconPort ?? DEFAULT_RCON_PORT).toString(),
 									serverPassword: instance.password
 								})}`,
 								{

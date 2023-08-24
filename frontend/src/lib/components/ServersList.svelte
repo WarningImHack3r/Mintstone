@@ -2,7 +2,7 @@
 	import { serversDb } from "$lib/db/stores";
 	import { getDrawerStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
-	import { api } from "$lib/utils";
+	import { api, disableTypeCheck } from "$lib/utils";
 
 	const drawerStore = getDrawerStore();
 
@@ -20,9 +20,6 @@
 		drawerStore.close();
 	}
 
-	// Disable errors due to no TS in markup (https://github.com/sveltejs/language-tools/issues/1026#issuecomment-1002839154)
-	const disableTypeCheck = (fn: any) => fn;
-
 	let editMode = false;
 	const serverIndexStore = localStorageStore("serverIndex", 0);
 	$: $serverIndexStore =
@@ -34,7 +31,7 @@
 		<h3 class="h3">Servers</h3>
 		<div class="flex gap-0">
 			{#if !editMode}
-			<!-- TODO: link to /new -->
+				<!-- TODO: link to /new -->
 				<a href="/" class="btn btn-icon" on:click={drawerStore.close}>
 					<span>
 						<PlusIcon class="h-4" />
@@ -79,7 +76,7 @@
 							</span>
 							<button
 								type="button"
-								class="btn-icon btn-icon-lg"
+								class="btn-icon btn-icon-lg !ml-auto !px-0"
 								use:popup={{
 									event: "click",
 									target: `serverMenu${index}`
@@ -107,27 +104,27 @@
 							</span>
 						</button>
 					{/if}
-					<div class="card z-10 w-48 p-4 shadow-xl" data-popup="serverMenu{index}">
+					<div class="card z-10 w-fit p-4 shadow-xl" data-popup="serverMenu{index}">
 						<div class="bg-surface-100-800-token arrow" />
 						<nav class="list-nav">
 							<ul>
-								<li>
+								<li class="child:w-full">
 									<!-- TODO: go to /servers/x/edit? -->
 									<a href="/">
 										<span class="badge">
 											<EditIcon />
 										</span>
-										<span class="flex-auto">Edit</span>
+										<span class="flex-auto text-left">Edit</span>
 									</a>
 								</li>
 								<hr />
-								<li>
+								<li class="child:w-full">
 									<!-- TODO: button to remove from db -->
 									<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
 										<span class="badge">
 											<TrashIcon />
 										</span>
-										<span class="flex-auto">Delete</span>
+										<span class="flex-auto text-left">Delete</span>
 									</a>
 								</li>
 							</ul>

@@ -123,7 +123,7 @@
 						v1.0.0
 					</button>
 				</div>
-				<div class="card w-48 shadow-xl" data-popup="versionMenu">
+				<div class="card z-10 w-fit shadow-xl" data-popup="versionMenu">
 					<div class="bg-surface-100-800-token arrow" />
 					<div class="px-4 py-2">
 						<strong>v1.0.0</strong>
@@ -163,27 +163,27 @@
 					<SettingsIcon />
 				</button>
 			</svelte:fragment>
-			<div class="card w-48 p-2 shadow-xl" data-popup="profileMenu">
+			<div class="card z-10 w-fit p-2 shadow-xl" data-popup="profileMenu">
 				<div class="bg-surface-100-800-token arrow" />
 				<nav class="list-nav">
 					<ul>
-						<li>
+						<li class="child:w-full">
 							<!-- TODO: go to /profile -->
 							<a href="/">
 								<span class="badge">
 									<UserIcon />
 								</span>
-								<span class="flex-auto whitespace-pre-wrap">Manage Profile</span>
+								<span class="flex-auto text-left">Manage Profile</span>
 							</a>
 						</li>
 						<hr />
-						<li>
+						<li class="child:w-full">
 							<!-- TODO: go to /logout -->
 							<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
 								<span class="badge">
 									<LogOutIcon />
 								</span>
-								<span class="flex-auto">Log Out</span>
+								<span class="flex-auto text-left">Log Out</span>
 							</a>
 						</li>
 					</ul>

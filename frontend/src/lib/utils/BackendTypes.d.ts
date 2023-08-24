@@ -1,3 +1,5 @@
+import type { UUID } from "crypto";
+
 export type UpdateCheck = {
     status: "success";
     updateAvailable: false;
@@ -83,4 +85,19 @@ type QueryMods = {
 type QueryMod = {
     modid: string;
     version: string;
+};
+
+type Player = WhitelistedPlayer & {
+    uuid: UUID;
+};
+
+type WhitelistedPlayer = {
+    name: string;
+};
+
+type BannedEntry = {
+    name?: string;
+    ip?: string;
+    bannedBy: string;
+    reason: string;
 };
