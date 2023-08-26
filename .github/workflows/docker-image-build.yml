@@ -31,10 +31,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: ⚙️ Create image tag
+        run: echo "TAG=${${{ github.event.release.tag_name }}#v}" >> $GITHUB_ENV
+
       - name: 🏗 Build and push Docker image
         uses: docker/build-push-action@v4
-        env:
-          TAG: ${${{ github.event.release.tag_name }}#v}
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v8,linux/arm/v7,linux/arm/v6
