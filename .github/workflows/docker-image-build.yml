@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: ⚙️ Create image tag
-        run: echo "TAG=${${{ github.event.release.tag_name }}#v}" >> $GITHUB_ENV
+        run: echo "TAG=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')" >> $GITHUB_ENV
 
       - name: 🏗 Build and push Docker image
         uses: docker/build-push-action@v4
