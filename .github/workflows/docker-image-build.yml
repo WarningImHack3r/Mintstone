@@ -5,9 +5,13 @@ on:
     types: [prereleased, released]
 
 jobs:
-  release:
+  build-and-release:
     name: Build and push Docker image
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: 📥 Checkout
