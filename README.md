@@ -28,6 +28,26 @@ _Upcoming_
 
 ### Installing Mintstone
 
+#### Docker (recommended)
+
+1. Make sure you have [Docker](https://www.docker.com) installed.
+2. Create the container with the following command:
+    ```sh
+    docker run -d \
+        --name mintstone \
+        -p 8080:8080 \
+        -p 3000:3000 \
+        ghcr.io/warningimhack3r/mintstone
+    ```
+3. Open `http://localhost:3000` in your browser.
+
+#### Manual (Docker Compose)
+
+1. Make sure you have [Docker](https://www.docker.com) and [Docker Compose](https://docs.docker.com/compose) installed.
+2. Clone this repository.
+3. Run `docker-compose up` in the root directory.
+4. Open `http://localhost:3000` in your browser.
+
 #### Manual
 
 1. Make sure you have [Node.js](https://nodejs.org) (v16+), [PNPM](https://pnpm.io), and [Java](https://www.java.com) installed.
@@ -36,6 +56,7 @@ _Upcoming_
 4. Run `pnpm install` in the `frontend` directory.
 5. Run `pnpm build` in the `frontend` directory.
 6. Run `pnpm start` in the `frontend` directory.
+7. Open `http://localhost:3000` in your browser.
 
 ## Contributing
 

@@ -1,0 +1,47 @@
+name: Build and push Docker image
+
+on:
+  release:
+    types: [prereleased, released]
+
+jobs:
+  build-and-release:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v3
+
+      - name: 📦 Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: 🔨 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: 👨🏻‍💻 Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⚙️ Create environment variables
+        run: |
+          echo "REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "TAG=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')" >> $GITHUB_ENV
+
+      - name: 🏗 Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          provenance: false
+          platforms: linux/amd64,linux/arm64/v8
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO }}:${{ env.TAG }}
+            ghcr.io/${{ env.REPO }}:latest
