@@ -31,8 +31,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: ⚙️ Create image tag
-        run: echo "TAG=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')" >> $GITHUB_ENV
+      - name: ⚙️ Create environment variables
+        run: |
+          echo "REPO=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "TAG=$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')" >> $GITHUB_ENV
 
       - name: 🏗 Build and push Docker image
         uses: docker/build-push-action@v4
@@ -41,5 +43,5 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v8,linux/arm/v7,linux/arm/v6
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:${{ env.TAG }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ env.REPO }}:${{ env.TAG }}
+            ghcr.io/${{ env.REPO }}:latest
