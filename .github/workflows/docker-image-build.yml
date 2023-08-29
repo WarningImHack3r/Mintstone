@@ -22,7 +22,8 @@ jobs:
         run: |
           # Merge backend and frontend Dockerfiles
           awk -v prefix=backend '$1 == "COPY" && $2 !~ /^--/ {print $1, prefix"/"$2, $3; next} 1' backend/Dockerfile > Dockerfile
-          echo "\n" >> Dockerfile
+          echo >> Dockerfile
+          echo >> Dockerfile
           awk -v prefix=frontend '$1 == "COPY" && $2 !~ /^--/ {print $1, prefix"/"$2, $3; next} 1' frontend/Dockerfile >> Dockerfile
 
           # Remove and store CMD lines into variables
@@ -35,7 +36,8 @@ jobs:
           CMD_FRONTEND=$(echo $CMD_FRONTEND | sed 's/CMD //; s/^\[ //; s/ \]$//; s/, / /g; s/"//g; s/^/exec /')
 
           # Create bash script to run both backend and frontend
-          echo "#!/bin/bash\n" > run.sh
+          echo "#!/bin/bash" > run.sh
+          echo >> run.sh
           echo "set -e" >> run.sh
           echo "echo \"Starting backend...\"" >> run.sh
           echo "$CMD_BACKEND &" >> run.sh
