@@ -44,7 +44,7 @@
 					<span class="font-bold">
 						{title}
 					</span>
-					<span class="flex gap-0">
+					<!-- <span class="flex gap-0">
 						{#if enableAdd}
 							<button
 								type="button"
@@ -74,7 +74,7 @@
 						>
 							<SearchIcon />
 						</button>
-					</span>
+					</span> -->
 				</tr>
 			</thead>
 			<tbody>

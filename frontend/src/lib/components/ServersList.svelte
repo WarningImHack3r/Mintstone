@@ -38,7 +38,8 @@
 					</span>
 				</a>
 			{/if}
-			{#if $serversDb.length > 0}
+			{#if $serversDb.length > 0 && editMode}
+			<!-- {#if $serversDb.length > 0} -->
 				<button
 					type="button"
 					class={editMode ? "btn btn-sm font-bold uppercase opacity-50" : "btn btn-icon"}

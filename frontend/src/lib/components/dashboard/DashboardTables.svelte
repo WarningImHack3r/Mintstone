@@ -86,13 +86,13 @@
 		rowTitle={player => player.name}
 		rowSubtitle={player => player.uuid}
 		rowActions={item => [
-			{
+			/*{
 				text: "Open profile",
 				icon: UserIcon,
 				action: () => {
 					// TODO: go to /servers/:serverId/players/:playerId
 				}
-			},
+			},*/
 			{
 				text: "Ban",
 				icon: SlashIcon,
@@ -177,13 +177,13 @@
 		rowTitle={player => player.name}
 		enableAdd
 		rowActions={item => [
-			{
+			/*{
 				text: "Open profile",
 				icon: UserIcon,
 				action: () => {
 					// TODO: go to /servers/:serverId/players/:playerId
 				}
-			},
+			},*/
 			{
 				text: "Remove",
 				icon: UserMinusIcon,
@@ -244,13 +244,13 @@
 		rowSubtitle={player => `${player.reason} (${player.bannedBy})`}
 		enableAdd
 		rowActions={item => [
-			{
+			/*{
 				text: "Open profile",
 				icon: UserIcon,
 				action: () => {
 					// TODO: go to /servers/:serverId/players/:playerId
 				}
-			},
+			},*/
 			{
 				text: "Unban",
 				icon: CircleIcon,

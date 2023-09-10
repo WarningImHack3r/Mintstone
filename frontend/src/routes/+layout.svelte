@@ -141,9 +141,9 @@
 					</a>
 				</div>
 			</div>
-			<svelte:fragment slot="trail">
+			<!-- <svelte:fragment slot="trail"> -->
 				<!-- Profile -->
-				<button
+				<!-- <button
 					type="button"
 					class="btn-icon-md btn-icon"
 					use:popup={{
@@ -152,9 +152,10 @@
 					}}
 				>
 					<UserIcon />
-				</button>
+				</button> -->
 
-				<button
+				<!-- Settings -->
+				<!-- <button
 					type="button"
 					class="btn-icon-md btn-icon"
 					on:click={() => {
@@ -162,8 +163,8 @@
 					}}
 				>
 					<SettingsIcon />
-				</button>
-			</svelte:fragment>
+				</button> -->
+			<!-- </svelte:fragment> -->
 			<div class="card z-10 w-fit p-2 shadow-xl" data-popup="profileMenu">
 				<div class="bg-surface-100-800-token arrow" />
 				<nav class="list-nav">
