@@ -128,7 +128,7 @@
 							{#if tags.length > 0}
 								{#if tags[0].name === version}
 									<p class="text-sm opacity-75">Up-to-date!</p>
-								{:else}
+								{:else if tags.map(t => t.name).includes(version)}
 									<p class="text-sm opacity-75">Update available! ({tags[0].name})</p>
 									<a
 										href="https://github.com/WarningImHack3r/Mintstone/releases/latest"
@@ -137,9 +137,11 @@
 									>
 										What's new?
 									</a>
+								{:else}
+									<p class="text-sm text-tertiary-500">Development version</p>
 								{/if}
 							{:else}
-								<p class="text-sm opacity-75">No version information available</p>
+								<p class="text-sm opacity-75">No version information<br />available</p>
 							{/if}
 						{:catch}
 							<p class="text-sm text-red-500/75">Couldn't check for updates</p>
