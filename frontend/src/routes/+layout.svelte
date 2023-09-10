@@ -62,7 +62,8 @@
 			modalStore.trigger({
 				type: "confirm",
 				title: "Backend is not reachable!",
-				body: "The application will not be able to work until the backend is reachable. Press 'Confirm' to reload the page and try again.<br />If the problem persists, try restarting the application.",
+				body: "The application will not be able to work until the backend is reachable. Try restarting the application.<br />If the problem persists, please <a class=\"anchor\" href=\"https://github.com/WarningImHack3r/Mintstone/issues/new/choose\">file an issue</a> on GitHub.<br /><br />Press 'Reload' to reload the page and try again.",
+				buttonTextConfirm: "Reload",
 				response: (r: boolean) => {
 					if (r) {
 						location.reload();
