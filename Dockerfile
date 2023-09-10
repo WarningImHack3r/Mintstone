@@ -24,11 +24,11 @@ RUN pnpm run build
 
 # Build final image
 FROM eclipse-temurin:20-jre-jammy
-RUN apt update && \
-    apt install -y curl ca-certificates gnupg && \
+RUN apt-get update && \
+    apt-get install -y curl ca-certificates gnupg && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-    apt update && apt install -y nodejs
+    apt-get update && apt-get install -y nodejs
 
 WORKDIR /app
 COPY --from=build-back /app/build/libs/mintstone-backend.jar back/app.jar
