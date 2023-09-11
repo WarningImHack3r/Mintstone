@@ -91,6 +91,9 @@
 					if (form && !form.reportValidity()) {
 						return;
 					}
+					if (Number.isNaN(formData.rconPort)) {
+						formData.rconPort = DEFAULT_RCON_PORT;
+					}
 					if ($modalStore[0].response) {
 						$modalStore[0].response(formData);
 					}
