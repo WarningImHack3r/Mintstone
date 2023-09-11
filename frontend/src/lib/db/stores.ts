@@ -1,4 +1,4 @@
 import type { Server } from "$lib/utils/BackendTypes";
-import { writable } from "svelte/store";
+import { localStorageStore } from "@skeletonlabs/skeleton";
 
-export const serversDb = writable<Server[]>([]);
+export const serversDb = localStorageStore<Server[]>("servers", []);

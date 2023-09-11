@@ -10,12 +10,7 @@
 		XIcon
 	} from "svelte-feather-icons";
 	import type { Query, QueryResult, UpdateCheck, Version } from "$lib/utils/BackendTypes";
-	import {
-		DEFAULT_RCON_PORT,
-		api,
-		getMinecraftVersions,
-		minecraftVersionFromProtocol
-	} from "$lib/utils";
+	import { api, getMinecraftVersions, minecraftVersionFromProtocol } from "$lib/utils";
 	import { serversDb } from "$lib/db/stores";
 	import DashboardOverview from "$lib/components/dashboard/DashboardOverview.svelte";
 	import DashboardPlayerTables from "$lib/components/dashboard/DashboardTables.svelte";
@@ -34,6 +29,8 @@
 	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
 	$: if (currentServer) {
 		loadServer();
+	} else {
+		initialCheckDone = undefined;
 	}
 
 	// Check for updates
@@ -108,13 +105,27 @@
 			Add your first server now! You're only a few clicks away from great powers (and great
 			responsibilities).
 		</h3>
-		<!-- TODO: link to /new -->
-		<a href="/" class="variant-filled btn mt-8">
+		<button
+			type="button"
+			class="variant-filled btn mt-8"
+			on:click={() =>
+				modalStore.trigger({
+					type: "component",
+					component: "addServerModal",
+					title: "Add your server",
+					body: "Enter your server's address and credentials to add it to Mintstone.",
+					response: r => {
+						if (r) {
+							$serversDb = [...$serversDb, r];
+						}
+					}
+				})}
+		>
 			<span>
 				<PlusIcon />
 			</span>
 			<span>Add your server</span>
-		</a>
+		</button>
 	</div>
 {:else if initialCheckDone === false}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">

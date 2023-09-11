@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from "svelte";
 	import type { QueryResult, Server, Version } from "$lib/utils/BackendTypes";
-	import { DEFAULT_RCON_PORT, api, minecraftVersionFromProtocol } from "$lib/utils";
+	import { api, minecraftVersionFromProtocol } from "$lib/utils";
 	import { ProgressRadial, getModalStore } from "@skeletonlabs/skeleton";
 	import { PowerIcon, RefreshCwIcon, UsersIcon } from "svelte-feather-icons";
 

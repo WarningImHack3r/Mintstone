@@ -24,7 +24,21 @@ You can see the full list of planned features [in the Projects tab](https://gith
 
 ### Configuring your Minecraft server
 
-_Upcoming_
+Edit your `server.properties` by changing the following values:
+
+```properties
+# Enable most of the features
+enable-rcon=true
+# Set any password you want but set one
+rcon.password=<your password>
+# Change it or leave it as is, but make sure it's not the same as your server port and note it down
+rcon.port=<your port>
+
+# Enable monitoring features
+enable-jmx-monitoring=true
+```
+
+Then restart your server.
 
 ### Installing Mintstone
 

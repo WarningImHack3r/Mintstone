@@ -1,15 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { BannedEntry, Player, Server, WhitelistedPlayer } from "$lib/utils/BackendTypes";
-	import { DEFAULT_RCON_PORT, api, avatarFromPlayerUUID, disableTypeCheck } from "$lib/utils";
+	import { api, avatarFromPlayerUUID } from "$lib/utils";
 	import Table from "../Table.svelte";
-	import {
-		CircleIcon,
-		SlashIcon,
-		UserIcon,
-		UserMinusIcon,
-		UserPlusIcon
-	} from "svelte-feather-icons";
+	import { CircleIcon, SlashIcon, UserMinusIcon, UserPlusIcon } from "svelte-feather-icons";
 
 	export let server: Server;
 

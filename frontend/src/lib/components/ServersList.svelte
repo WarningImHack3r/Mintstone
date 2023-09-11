@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { serversDb } from "$lib/db/stores";
-	import { getDrawerStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
+	import { getDrawerStore, getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
 	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
 	import { api, disableTypeCheck } from "$lib/utils";
 
 	const drawerStore = getDrawerStore();
+	const modalStore = getModalStore();
 
 	function serverSelected(target: EventTarget | null, index: number) {
 		$serverIndexStore = index;
@@ -31,15 +32,28 @@
 		<h3 class="h3">Servers</h3>
 		<div class="flex gap-0">
 			{#if !editMode}
-				<!-- TODO: link to /new -->
-				<a href="/" class="btn btn-icon" on:click={drawerStore.close}>
+				<button
+					type="button"
+					class="btn-icon"
+					on:click={() =>
+						modalStore.trigger({
+							type: "component",
+							component: "addServerModal",
+							title: "Add your server",
+							body: "Enter your server's address and credentials to add it to Mintstone.",
+							response: r => {
+								if (r) {
+									$serversDb = [...$serversDb, r];
+								}
+							}
+						})}
+				>
 					<span>
 						<PlusIcon class="h-4" />
 					</span>
-				</a>
+				</button>
 			{/if}
-			{#if $serversDb.length > 0 && editMode}
-			<!-- {#if $serversDb.length > 0} -->
+			{#if $serversDb.length > 0}
 				<button
 					type="button"
 					class={editMode ? "btn btn-sm font-bold uppercase opacity-50" : "btn btn-icon"}
@@ -109,24 +123,27 @@
 						<div class="bg-surface-100-800-token arrow" />
 						<nav class="list-nav">
 							<ul>
-								<li class="child:w-full">
-									<!-- TODO: go to /servers/x/edit? -->
-									<a href="/">
+								<!-- <li class="child:w-full"> -->
+								<!-- TODO: go to /servers/x/edit? -->
+								<!-- <a href="/">
 										<span class="badge">
 											<EditIcon />
 										</span>
 										<span class="flex-auto text-left">Edit</span>
 									</a>
 								</li>
-								<hr />
+								<hr /> -->
 								<li class="child:w-full">
-									<!-- TODO: button to remove from db -->
-									<a href="/" class="text-error-500 hover:!bg-error-backdrop-token">
+									<button
+										type="button"
+										class="text-error-500 hover:!bg-error-backdrop-token"
+										on:click={() => ($serversDb = $serversDb.filter((_, i) => i !== index))}
+									>
 										<span class="badge">
 											<TrashIcon />
 										</span>
 										<span class="flex-auto text-left">Delete</span>
-									</a>
+									</button>
 								</li>
 							</ul>
 						</nav>

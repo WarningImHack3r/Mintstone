@@ -1,5 +1,6 @@
 import { join } from "path";
 import type { Config } from "tailwindcss";
+import forms from "@tailwindcss/forms";
 import plugin from "tailwindcss/plugin";
 import { skeleton } from "@skeletonlabs/tw-plugin";
 
@@ -13,6 +14,7 @@ export default {
 		extend: {}
 	},
 	plugins: [
+		forms,
 		plugin(function ({ addVariant }) {
 			addVariant("child", "& > *");
 			addVariant("child-hover", "& > *:hover");

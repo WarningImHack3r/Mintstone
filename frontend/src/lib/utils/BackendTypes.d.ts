@@ -31,11 +31,14 @@ export type Version = {
 type Platform = "Paper" | "Spigot" | "Bukkit" | "Vanilla" | "Unknown";
 
 export type Server = {
-	id: string;
 	name: string;
 	address: string;
 	rconPort: number;
 	rconPassword: string;
+	features: {
+		rcon: boolean;
+		jmx: boolean;
+	}
 };
 
 export type Query = {

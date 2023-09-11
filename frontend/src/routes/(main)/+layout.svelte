@@ -14,6 +14,7 @@
 	import { GithubIcon, LogOutIcon, MenuIcon, UserIcon } from "svelte-feather-icons";
 	import { backendUrl } from "$lib/utils";
 	import ServersList from "$lib/components/ServersList.svelte";
+	import AddServerForm from "$lib/components/AddServerForm.svelte";
 
 	// Create stores
 	const drawerStore = getDrawerStore();
@@ -74,7 +75,14 @@
 </script>
 
 <!-- Modal -->
-<Modal regionBody="max-h-80 overflow-y-auto" />
+<Modal
+	regionBody="max-h-80 overflow-y-auto"
+	components={{
+		addServerModal: {
+			ref: AddServerForm
+		}
+	}}
+/>
 
 <!-- Drawer -->
 <Drawer>
