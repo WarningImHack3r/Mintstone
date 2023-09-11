@@ -72,8 +72,8 @@
 							await api(
 								`/rcon/stop?${new URLSearchParams({
 									serverAddress: instance.address,
-									serverPort: (instance.rconPort ?? DEFAULT_RCON_PORT).toString(),
-									serverPassword: instance.password
+									serverPort: instance.rconPort.toString(),
+									serverPassword: instance.rconPassword
 								})}`,
 								{
 									method: "POST"
@@ -108,8 +108,8 @@
 							await api(
 								`/rcon/reload?${new URLSearchParams({
 									serverAddress: instance.address,
-									serverPort: (instance.rconPort ?? DEFAULT_RCON_PORT).toString(),
-									serverPassword: instance.password
+									serverPort: instance.rconPort.toString(),
+									serverPassword: instance.rconPassword
 								})}`,
 								{
 									method: "POST"

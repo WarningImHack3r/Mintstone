@@ -34,9 +34,8 @@ export type Server = {
 	id: string;
 	name: string;
 	address: string;
-	password: string;
-	rconPort?: number;
-	rconPassword?: string;
+	rconPort: number;
+	rconPassword: string;
 };
 
 export type Query = {

@@ -22,8 +22,8 @@
 			await api<{ players: Player[] }>(
 				`/rcon/playerslist?${new URLSearchParams({
 					serverAddress: server.address,
-					serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-					serverPassword: server.password
+					serverPort: server.rconPort.toString(),
+					serverPassword: server.rconPassword
 				})}`
 			)
 		).players;
@@ -34,8 +34,8 @@
 			await api<{ whitelist: WhitelistedPlayer[] }>(
 				`/rcon/whitelist?${new URLSearchParams({
 					serverAddress: server.address,
-					serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-					serverPassword: server.password
+					serverPort: server.rconPort.toString(),
+					serverPassword: server.rconPassword
 				})}`
 			)
 		).whitelist;
@@ -46,8 +46,8 @@
 			await api<{ banlist: BannedEntry[] }>(
 				`/rcon/banlist?${new URLSearchParams({
 					serverAddress: server.address,
-					serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-					serverPassword: server.password
+					serverPort: server.rconPort.toString(),
+					serverPassword: server.rconPassword
 				})}`
 			)
 		).banlist;
@@ -100,8 +100,8 @@
 					await api(
 						`/rcon/ban?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -126,8 +126,8 @@
 					await api(
 						`/rcon/whitelist/add?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -150,8 +150,8 @@
 					await api(
 						`/rcon/kick?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -191,8 +191,8 @@
 					await api(
 						`/rcon/whitelist/remove?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -215,8 +215,8 @@
 					await api(
 						`/rcon/ban?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -258,8 +258,8 @@
 					await api(
 						`/rcon/pardon${!!item.name ? "" : "-ip"}?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",
@@ -289,8 +289,8 @@
 					await api(
 						`/rcon/whitelist/add?${new URLSearchParams({
 							serverAddress: server.address,
-							serverPort: (server.rconPort ?? DEFAULT_RCON_PORT).toString(),
-							serverPassword: server.password
+							serverPort: server.rconPort.toString(),
+							serverPassword: server.rconPassword
 						})}`,
 						{
 							method: "POST",

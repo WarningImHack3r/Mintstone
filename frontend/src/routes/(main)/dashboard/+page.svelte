@@ -10,7 +10,12 @@
 		XIcon
 	} from "svelte-feather-icons";
 	import type { Query, QueryResult, UpdateCheck, Version } from "$lib/utils/BackendTypes";
-	import { DEFAULT_RCON_PORT, api, getMinecraftVersions, minecraftVersionFromProtocol } from "$lib/utils";
+	import {
+		DEFAULT_RCON_PORT,
+		api,
+		getMinecraftVersions,
+		minecraftVersionFromProtocol
+	} from "$lib/utils";
 	import { serversDb } from "$lib/db/stores";
 	import DashboardOverview from "$lib/components/dashboard/DashboardOverview.svelte";
 	import DashboardPlayerTables from "$lib/components/dashboard/DashboardTables.svelte";
@@ -51,8 +56,8 @@
 			serverVersion = await api<Version>(
 				`/rcon/version?${new URLSearchParams({
 					serverAddress: currentServer.address,
-					serverPort: (currentServer.rconPort ?? DEFAULT_RCON_PORT).toString(),
-					serverPassword: currentServer.password
+					serverPort: currentServer.rconPort.toString(),
+					serverPassword: currentServer.rconPassword
 				})}`
 			);
 		} catch (error) {}
@@ -72,8 +77,8 @@
 			updateResult = await api<UpdateCheck>(
 				`/rcon/check-for-updates?${new URLSearchParams({
 					serverAddress: currentServer.address,
-					serverPort: (currentServer.rconPort ?? DEFAULT_RCON_PORT).toString(),
-					serverPassword: currentServer.password
+					serverPort: currentServer.rconPort.toString(),
+					serverPassword: currentServer.rconPassword
 				})}`,
 				{
 					method: "POST",
