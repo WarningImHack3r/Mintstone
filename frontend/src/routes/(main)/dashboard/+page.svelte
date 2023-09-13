@@ -368,7 +368,7 @@
 			{/if}
 		{/await}
 
-		<main class="p-8">
+		<div class="p-8">
 			<DashboardOverview
 				instance={currentServer}
 				platform={serverVersion}
@@ -380,7 +380,7 @@
 				<h3 class="h3">Players</h3>
 				<DashboardPlayerTables server={currentServer} />
 			</div>
-		</main>
+		</div>
 	<!-- {:else} -->
 	<!-- TODO: placeholders? -->
 	{/if}

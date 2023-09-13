@@ -133,11 +133,12 @@
 						{#await getGitHubTags()}
 							<p class="text-sm opacity-75">Checking for updates...</p>
 						{:then tags}
-							{#if tags.length > 0}
-								{#if tags[0].name === version}
+							{@const versions = tags.map(t => t.name.replace("v", ""))}
+							{#if versions.length > 0}
+								{#if versions[0] === version}
 									<p class="text-sm opacity-75">Up-to-date!</p>
-								{:else if tags.map(t => t.name).includes(version)}
-									<p class="text-sm opacity-75">Update available! ({tags[0].name})</p>
+								{:else if versions.includes(version)}
+									<p class="text-sm opacity-75">Update available! ({versions[0]})</p>
 									<a
 										href="https://github.com/WarningImHack3r/Mintstone/releases/latest"
 										target="_blank"

@@ -5,7 +5,10 @@
 
 	export let parent: any;
 
+	const modalStore = getModalStore();
+
 	let form: HTMLFormElement;
+	let wantsDefaultPort = false;
 	const formData: Server = {
 		name: "",
 		address: "",
@@ -16,8 +19,28 @@
 			jmx: true
 		}
 	};
+	let portField: number;
+	let storedPort: number;
+	let defaultNumber: number;
+	$: if (wantsDefaultPort) {
+		storedPort = portField;
+		portField = DEFAULT_RCON_PORT;
+	}
+	$: if (!wantsDefaultPort) {
+		portField = storedPort;
+		storedPort = defaultNumber;
+	}
 
-	const modalStore = getModalStore();
+	function submitForm() {
+		if (form && !form.reportValidity()) {
+			return;
+		}
+		formData.rconPort = portField;
+		if ($modalStore[0].response) {
+			$modalStore[0].response(formData);
+		}
+		modalStore.close();
+	}
 </script>
 
 {#if $modalStore[0]}
@@ -25,7 +48,11 @@
 		<header class="text-2xl font-bold">{$modalStore[0].title ?? "Title"}</header>
 		<article>{$modalStore[0].body ?? "Body"}</article>
 
-		<form class="space-y-4 border border-surface-500 p-4 rounded-container-token" bind:this={form}>
+		<form
+			class="space-y-4 border border-surface-500 p-4 rounded-container-token"
+			bind:this={form}
+			on:submit|preventDefault={submitForm}
+		>
 			<label class="label">
 				<span>Server name</span>
 				<input
@@ -48,14 +75,22 @@
 			</label>
 			<label class="label">
 				<span>RCON port</span>
-				<input
-					class="input"
-					type="number"
-					bind:value={formData.rconPort}
-					placeholder="Default value: {DEFAULT_RCON_PORT}"
-					required={formData.features.rcon}
-					disabled={!formData.features.rcon}
-				/>
+				<div class="flex items-center gap-4">
+					<input
+						class="input flex-1"
+						type="number"
+						bind:value={portField}
+						min="0"
+						max="65535"
+						placeholder="Default value: {DEFAULT_RCON_PORT}"
+						required={formData.features.rcon}
+						disabled={!formData.features.rcon || wantsDefaultPort}
+					/>
+					<label class="flex items-center gap-2">
+						<input type="checkbox" class="checkbox" bind:checked={wantsDefaultPort} />
+						<p>Use default port</p>
+					</label>
+				</div>
 			</label>
 			<label class="label">
 				<span>RCON password</span>
@@ -79,29 +114,15 @@
 					</SlideToggle>
 				</div>
 			</div>
+
+			<button hidden />
 		</form>
 
 		<footer class={parent.regionFooter}>
 			<button class="btn {parent.buttonNeutral}" on:click={parent.onClose}>
 				{parent.buttonTextCancel}
 			</button>
-			<button
-				class="btn {parent.buttonPositive}"
-				on:click={() => {
-					if (form && !form.reportValidity()) {
-						return;
-					}
-					if (Number.isNaN(formData.rconPort)) {
-						formData.rconPort = DEFAULT_RCON_PORT;
-					}
-					if ($modalStore[0].response) {
-						$modalStore[0].response(formData);
-					}
-					modalStore.close();
-				}}
-			>
-				Add server
-			</button>
+			<button class="btn {parent.buttonPositive}" on:click={submitForm}>Add server</button>
 		</footer>
 	</div>
 {/if}

@@ -23,8 +23,7 @@
 
 	let editMode = false;
 	const serverIndexStore = localStorageStore("serverIndex", 0);
-	$: $serverIndexStore =
-		$serverIndexStore > $serversDb.length && $serversDb.length > 0 ? 0 : $serverIndexStore;
+	$: $serverIndexStore = $serversDb.length > 0 ? $serversDb.length - 1 : 0;
 </script>
 
 <nav class="list-nav p-4">
@@ -137,7 +136,12 @@
 									<button
 										type="button"
 										class="text-error-500 hover:!bg-error-backdrop-token"
-										on:click={() => ($serversDb = $serversDb.filter((_, i) => i !== index))}
+										on:click={() => {
+											$serversDb = $serversDb.filter((_, i) => i !== index);
+											if ($serversDb.length === 0) {
+												editMode = false;
+											}
+										}}
 									>
 										<span class="badge">
 											<TrashIcon />
