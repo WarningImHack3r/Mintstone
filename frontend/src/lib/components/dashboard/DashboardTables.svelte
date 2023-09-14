@@ -1,11 +1,19 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import type { BannedEntry, Player, Server, WhitelistedPlayer } from "$lib/utils/BackendTypes";
+	import type { UUID } from "crypto";
+	import type {
+		BannedEntry,
+		Player,
+		QueryPlayer,
+		Server,
+		WhitelistedPlayer
+	} from "$lib/utils/BackendTypes";
 	import { api, avatarFromPlayerUUID } from "$lib/utils";
 	import Table from "../Table.svelte";
 	import { CircleIcon, SlashIcon, UserMinusIcon, UserPlusIcon } from "svelte-feather-icons";
 
 	export let server: Server;
+	export let players: QueryPlayer[];
 
 	let onlinePlayers: Player[] = [];
 	let whitelistedPlayers: WhitelistedPlayer[] = [];
@@ -48,6 +56,13 @@
 	}
 
 	onMount(async () => {
+		if (!server.features.rcon) {
+			onlinePlayers = players.map(player => ({
+				name: player.name,
+				uuid: player.id as UUID
+			}));
+			return;
+		}
 		onlinePlayers = await getOnlinePlayers();
 		whitelistedPlayers = await getWhitelistedPlayers();
 		bannedPlayers = await getBannedPlayers();
@@ -87,219 +102,233 @@
 					// TODO: go to /servers/:serverId/players/:playerId
 				}
 			},*/
-			{
-				text: "Ban",
-				icon: SlashIcon,
-				action: async () => {
-					await api(
-						`/rcon/ban?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
+			...(server.features.rcon
+				? [
 						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								player: item.name
-								// TODO: add modal to enter reason
-							})
-						}
-					);
-					onlinePlayers = await getOnlinePlayers();
-					bannedPlayers = await getBannedPlayers();
-				},
-				destructive: true
-			},
-			{
-				text: "Whitelist",
-				icon: UserPlusIcon,
-				action: async () => {
-					await api(
-						`/rcon/whitelist/add?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								player: item.name
-							})
-						}
-					);
-					whitelistedPlayers = await getWhitelistedPlayers();
-				},
-				destructive: true
-			},
-			{
-				text: "Kick",
-				icon: UserMinusIcon,
-				action: async () => {
-					await api(
-						`/rcon/kick?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								player: item.name
-								// TODO: add modal to enter reason
-							})
-						}
-					);
-					onlinePlayers = await getOnlinePlayers();
-				},
-				destructive: true
-			}
-		]}
-	/>
-	<!-- Whitelisted: Open profile, remove, ban -->
-	<Table
-		title="Whitelisted"
-		bind:collection={whitelistedPlayers}
-		rowTitle={player => player.name}
-		enableAdd
-		rowActions={item => [
-			/*{
-				text: "Open profile",
-				icon: UserIcon,
-				action: () => {
-					// TODO: go to /servers/:serverId/players/:playerId
-				}
-			},*/
-			{
-				text: "Remove",
-				icon: UserMinusIcon,
-				action: async () => {
-					await api(
-						`/rcon/whitelist/remove?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								player: item.name
-							})
-						}
-					);
-					whitelistedPlayers = await getWhitelistedPlayers();
-				},
-				destructive: true
-			},
-			{
-				text: "Ban",
-				icon: SlashIcon,
-				action: async () => {
-					await api(
-						`/rcon/ban?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								player: item.name
-								// TODO: add modal to enter reason
-							})
-						}
-					);
-					onlinePlayers = await getOnlinePlayers();
-					bannedPlayers = await getBannedPlayers();
-				},
-				destructive: true
-			}
-		]}
-	/>
-	<!-- Banned: Open profile, unban, whitelist -->
-	<Table
-		title="Banned"
-		bind:collection={bannedPlayers}
-		rowTitle={player => (player.name ? player.name : player.ip) ?? "?"}
-		rowSubtitle={player => `${player.reason} (${player.bannedBy})`}
-		enableAdd
-		rowActions={item => [
-			/*{
-				text: "Open profile",
-				icon: UserIcon,
-				action: () => {
-					// TODO: go to /servers/:serverId/players/:playerId
-				}
-			},*/
-			{
-				text: "Unban",
-				icon: CircleIcon,
-				action: async () => {
-					await api(
-						`/rcon/pardon${!!item.name ? "" : "-ip"}?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify(
-								!!item.name
-									? {
+							text: "Ban",
+							icon: SlashIcon,
+							action: async () => {
+								await api(
+									`/rcon/ban?${new URLSearchParams({
+										serverAddress: server.address,
+										serverPort: server.rconPort.toString(),
+										serverPassword: server.rconPassword
+									})}`,
+									{
+										method: "POST",
+										headers: {
+											"Content-Type": "application/json"
+										},
+										body: JSON.stringify({
 											player: item.name
-									  }
-									: {
-											ip: item.ip
-									  }
-							)
-						}
-					);
-					bannedPlayers = await getBannedPlayers();
-				},
-				destructive: true
-			},
-			{
-				text: "Whitelist",
-				icon: UserPlusIcon,
-				action: async () => {
-					if (!item.name) return;
-					await api(
-						`/rcon/whitelist/add?${new URLSearchParams({
-							serverAddress: server.address,
-							serverPort: server.rconPort.toString(),
-							serverPassword: server.rconPassword
-						})}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
+											// TODO: add modal to enter reason
+										})
+									}
+								);
+								onlinePlayers = await getOnlinePlayers();
+								bannedPlayers = await getBannedPlayers();
 							},
-							body: JSON.stringify({
-								player: item.name
-							})
+							destructive: true
 						}
-					);
-					whitelistedPlayers = await getWhitelistedPlayers();
-				},
-				destructive: true
-			}
+				  ]
+				: []),
+			...(server.features.rcon
+				? [
+						{
+							text: "Whitelist",
+							icon: UserPlusIcon,
+							action: async () => {
+								await api(
+									`/rcon/whitelist/add?${new URLSearchParams({
+										serverAddress: server.address,
+										serverPort: server.rconPort.toString(),
+										serverPassword: server.rconPassword
+									})}`,
+									{
+										method: "POST",
+										headers: {
+											"Content-Type": "application/json"
+										},
+										body: JSON.stringify({
+											player: item.name
+										})
+									}
+								);
+								whitelistedPlayers = await getWhitelistedPlayers();
+							},
+							destructive: true
+						}
+				  ]
+				: []),
+			...(server.features.rcon
+				? [
+						{
+							text: "Kick",
+							icon: UserMinusIcon,
+							action: async () => {
+								await api(
+									`/rcon/kick?${new URLSearchParams({
+										serverAddress: server.address,
+										serverPort: server.rconPort.toString(),
+										serverPassword: server.rconPassword
+									})}`,
+									{
+										method: "POST",
+										headers: {
+											"Content-Type": "application/json"
+										},
+										body: JSON.stringify({
+											player: item.name
+											// TODO: add modal to enter reason
+										})
+									}
+								);
+								onlinePlayers = await getOnlinePlayers();
+							},
+							destructive: true
+						}
+				  ]
+				: [])
 		]}
 	/>
+	{#if server.features.rcon}
+		<!-- Whitelisted: Open profile, remove, ban -->
+		<Table
+			title="Whitelisted"
+			bind:collection={whitelistedPlayers}
+			rowTitle={player => player.name}
+			enableAdd
+			rowActions={item => [
+				/*{
+					text: "Open profile",
+					icon: UserIcon,
+					action: () => {
+						// TODO: go to /servers/:serverId/players/:playerId
+					}
+				},*/
+				{
+					text: "Remove",
+					icon: UserMinusIcon,
+					action: async () => {
+						await api(
+							`/rcon/whitelist/remove?${new URLSearchParams({
+								serverAddress: server.address,
+								serverPort: server.rconPort.toString(),
+								serverPassword: server.rconPassword
+							})}`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									player: item.name
+								})
+							}
+						);
+						whitelistedPlayers = await getWhitelistedPlayers();
+					},
+					destructive: true
+				},
+				{
+					text: "Ban",
+					icon: SlashIcon,
+					action: async () => {
+						await api(
+							`/rcon/ban?${new URLSearchParams({
+								serverAddress: server.address,
+								serverPort: server.rconPort.toString(),
+								serverPassword: server.rconPassword
+							})}`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									player: item.name
+									// TODO: add modal to enter reason
+								})
+							}
+						);
+						onlinePlayers = await getOnlinePlayers();
+						bannedPlayers = await getBannedPlayers();
+					},
+					destructive: true
+				}
+			]}
+		/>
+		<!-- Banned: Open profile, unban, whitelist -->
+		<Table
+			title="Banned"
+			bind:collection={bannedPlayers}
+			rowTitle={player => (player.name ? player.name : player.ip) ?? "?"}
+			rowSubtitle={player => `${player.reason} (${player.bannedBy})`}
+			enableAdd
+			rowActions={item => [
+				/*{
+					text: "Open profile",
+					icon: UserIcon,
+					action: () => {
+						// TODO: go to /servers/:serverId/players/:playerId
+					}
+				},*/
+				{
+					text: "Unban",
+					icon: CircleIcon,
+					action: async () => {
+						await api(
+							`/rcon/pardon${!!item.name ? "" : "-ip"}?${new URLSearchParams({
+								serverAddress: server.address,
+								serverPort: server.rconPort.toString(),
+								serverPassword: server.rconPassword
+							})}`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify(
+									!!item.name
+										? {
+												player: item.name
+										  }
+										: {
+												ip: item.ip
+										  }
+								)
+							}
+						);
+						bannedPlayers = await getBannedPlayers();
+					},
+					destructive: true
+				},
+				{
+					text: "Whitelist",
+					icon: UserPlusIcon,
+					action: async () => {
+						if (!item.name) return;
+						await api(
+							`/rcon/whitelist/add?${new URLSearchParams({
+								serverAddress: server.address,
+								serverPort: server.rconPort.toString(),
+								serverPassword: server.rconPassword
+							})}`,
+							{
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json"
+								},
+								body: JSON.stringify({
+									player: item.name
+								})
+							}
+						);
+						whitelistedPlayers = await getWhitelistedPlayers();
+					},
+					destructive: true
+				}
+			]}
+		/>
+	{/if}
 </div>

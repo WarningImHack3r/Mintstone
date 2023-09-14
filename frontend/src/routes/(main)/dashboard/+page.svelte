@@ -50,6 +50,18 @@
 		if (!currentServer) return;
 		initialCheckDone = false;
 		try {
+			if (!currentServer.features.rcon) {
+				// Only query and quit
+				query = (
+					await api<Query>(
+						`/query?${new URLSearchParams({
+							server: currentServer.address
+						})}`
+					)
+				).query;
+				initialCheckDone = true;
+				return;
+			}
 			serverVersion = await api<Version>(
 				`/rcon/version?${new URLSearchParams({
 					serverAddress: currentServer.address,
@@ -154,7 +166,7 @@
 	</div>
 {:else if serverVersion}
 	{#if currentServer && query}
-		{#if showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
+		{#if currentServer.features.rcon && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
 			<aside class="alert variant-ghost-warning">
 				<div>
 					<InfoIcon />
@@ -371,15 +383,17 @@
 		<div class="p-8">
 			<DashboardOverview
 				instance={currentServer}
-				platform={serverVersion}
+				platform={currentServer.features.rcon ? serverVersion : undefined}
 				fetchedData={query}
 				on:server-stopped={loadServer}
 			/>
-			<hr class="my-8 !border-t-2" />
-			<div class="flex flex-col gap-4">
-				<h3 class="h3">Players</h3>
-				<DashboardPlayerTables server={currentServer} />
-			</div>
+			{#if !currentServer.features.rcon && query.players.sample}
+				<hr class="my-8 !border-t-2" />
+				<div class="flex flex-col gap-4">
+					<h3 class="h3">Players</h3>
+					<DashboardPlayerTables server={currentServer} players={query.players.sample ?? []} />
+				</div>
+			{/if}
 		</div>
 	<!-- {:else} -->
 	<!-- TODO: placeholders? -->

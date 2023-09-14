@@ -6,14 +6,14 @@
 	import { PowerIcon, RefreshCwIcon, UsersIcon } from "svelte-feather-icons";
 
 	export let instance: Server;
-	export let platform: Version;
+	export let platform: Version | undefined = undefined;
 	export let fetchedData: QueryResult;
 
 	const dispatch = createEventDispatcher<{
 		"server-stopped": undefined;
 	}>();
 	const modalStore = getModalStore();
-	let badges = [platform.platform.toString()];
+	let badges = [platform?.platform.toString()].filter(x => x);
 
 	let isStopping = false;
 	let isReloading = false;
@@ -50,88 +50,95 @@
 				{/each}
 			</div>
 			<div class="mt-2 flex flex-col opacity-50">
-				<span><strong>Address:</strong> {instance.address}</span>
+				<span><strong>Address:</strong> {fetchedData.server.hostname}</span>
 			</div>
 		</div>
 	</div>
 
 	<!-- Right part -->
-	<div class="card flex flex-col gap-2 rounded-3xl p-4 shadow-xl">
-		<button
-			type="button"
-			class="variant-filled-error btn"
-			class:relative={isStopping}
-			on:click={() =>
-				modalStore.trigger({
-					type: "confirm",
-					title: "Stop server",
-					body: "Are you sure you want to stop this server? The connection will be lost until you start it again manually.",
-					async response(r) {
-						if (r) {
-							isStopping = true;
-							await api(
-								`/rcon/stop?${new URLSearchParams({
-									serverAddress: instance.address,
-									serverPort: instance.rconPort.toString(),
-									serverPassword: instance.rconPassword
-								})}`,
-								{
-									method: "POST"
-								}
-							);
-							isStopping = false;
-							setTimeout(() => dispatch("server-stopped"), 1500);
+	{#if platform}
+		<div class="card flex flex-col gap-2 rounded-3xl p-4 shadow-xl">
+			<button
+				type="button"
+				class="variant-filled-error btn"
+				class:relative={isStopping}
+				on:click={() =>
+					modalStore.trigger({
+						type: "confirm",
+						title: "Stop server",
+						body: "Are you sure you want to stop this server? The connection will be lost until you start it again manually.",
+						async response(r) {
+							if (r) {
+								isStopping = true;
+								await api(
+									`/rcon/stop?${new URLSearchParams({
+										serverAddress: instance.address,
+										serverPort: instance.rconPort.toString(),
+										serverPassword: instance.rconPassword
+									})}`,
+									{
+										method: "POST"
+									}
+								);
+								isStopping = false;
+								setTimeout(() => dispatch("server-stopped"), 1500);
+							}
 						}
-					}
-				})}
-		>
-			{#if isStopping}
-				<ProgressRadial stroke={100} track="stroke-surface-500/70" width="w-8" class="!absolute" />
-			{/if}
-			<span class:invisible={isStopping}>
-				<PowerIcon />
-			</span>
-			<span class:invisible={isStopping}>Stop</span>
-		</button>
-		<button
-			type="button"
-			class="variant-filled btn"
-			class:relative={isReloading}
-			on:click={() =>
-				modalStore.trigger({
-					type: "confirm",
-					title: "Reload server",
-					body: "Are you sure you want to reload this server? It's often not useful and might cause issues.",
-					async response(r) {
-						if (r) {
-							isReloading = true;
-							await api(
-								`/rcon/reload?${new URLSearchParams({
-									serverAddress: instance.address,
-									serverPort: instance.rconPort.toString(),
-									serverPassword: instance.rconPassword
-								})}`,
-								{
-									method: "POST"
-								}
-							);
-							isReloading = false;
+					})}
+			>
+				{#if isStopping}
+					<ProgressRadial
+						stroke={100}
+						track="stroke-surface-500/70"
+						width="w-8"
+						class="!absolute"
+					/>
+				{/if}
+				<span class:invisible={isStopping}>
+					<PowerIcon />
+				</span>
+				<span class:invisible={isStopping}>Stop</span>
+			</button>
+			<button
+				type="button"
+				class="variant-filled btn"
+				class:relative={isReloading}
+				on:click={() =>
+					modalStore.trigger({
+						type: "confirm",
+						title: "Reload server",
+						body: "Are you sure you want to reload this server? It's often not useful and might cause issues.",
+						async response(r) {
+							if (r) {
+								isReloading = true;
+								await api(
+									`/rcon/reload?${new URLSearchParams({
+										serverAddress: instance.address,
+										serverPort: instance.rconPort.toString(),
+										serverPassword: instance.rconPassword
+									})}`,
+									{
+										method: "POST"
+									}
+								);
+								isReloading = false;
+							}
 						}
-					}
-				})}
-		>
-			{#if isReloading}
-				<ProgressRadial
-					stroke={100}
-					meter="stroke-surface-700 dark:stroke-surface-400"
-					width="w-8"
-					class="!absolute"
-				/>
-			{/if}
-			<span class:invisible={isReloading}>
-				<RefreshCwIcon />
-			</span>
-			<span class:invisible={isReloading}>Reload</span>
-		</button>
-	</div>
+					})}
+			>
+				{#if isReloading}
+					<ProgressRadial
+						stroke={100}
+						meter="stroke-surface-700 dark:stroke-surface-400"
+						width="w-8"
+						class="!absolute"
+					/>
+				{/if}
+				<span class:invisible={isReloading}>
+					<RefreshCwIcon />
+				</span>
+				<span class:invisible={isReloading}>Reload</span>
+			</button>
+		</div>
+	{/if}
 </div>
