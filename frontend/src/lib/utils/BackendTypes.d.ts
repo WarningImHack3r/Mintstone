@@ -51,7 +51,7 @@ type QueryResult = {
 	version: QueryVersion;
 	players: QueryPlayers;
 	description: string;
-	favicon: string;
+	favicon?: string;
 	mods?: QueryMods;
 	gametype?: string;
 	map?: string;

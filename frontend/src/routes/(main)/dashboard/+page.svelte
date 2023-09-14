@@ -129,6 +129,7 @@
 					response: r => {
 						if (r) {
 							$serversDb = [...$serversDb, r];
+							$serverIndexStore = $serversDb.length - 1;
 						}
 					}
 				})}
@@ -139,7 +140,7 @@
 			<span>Add your server</span>
 		</button>
 	</div>
-{:else if initialCheckDone === false}
+{:else if initialCheckDone === false || (serverVersion && (!currentServer || !query))}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
 		<ProgressRadial
 			stroke={100}
@@ -164,41 +165,40 @@
 			</button>
 		{/await}
 	</div>
-{:else if serverVersion}
-	{#if currentServer && query}
-		{#if currentServer.features.rcon && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
-			<aside class="alert variant-ghost-warning">
-				<div>
-					<InfoIcon />
-				</div>
-				<div class="alert-message">
-					<p>
-						An update is available for <strong>{serverVersion.platform}</strong>
-						({serverVersion.version} ➜ {updateResult.latestVersion})
-					</p>
-				</div>
-				<div class="alert-actions">
-					<a
-						href={updateResult.downloadUrl}
-						class="variant-filled-warning btn"
-						target="_blank"
-						on:click={() => {
-							if (updateResult.status === "success" && updateResult.updateAvailable) {
-								closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
-							}
-						}}
-					>
-						Download
-					</a>
-					<button
-						type="button"
-						class="variant-outline-warning btn"
-						on:click={() => {
-							if (updateResult.status === "success" && updateResult.updateAvailable) {
-								modalStore.trigger({
-									type: "alert",
-									title: `Changelog for ${serverVersion.platform} ${updateResult.latestVersion}`,
-									body: `
+{:else if serverVersion && currentServer && query}
+	{#if currentServer.features.rcon && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
+		<aside class="alert variant-ghost-warning">
+			<div>
+				<InfoIcon />
+			</div>
+			<div class="alert-message">
+				<p>
+					An update is available for <strong>{serverVersion.platform}</strong>
+					({serverVersion.version} ➜ {updateResult.latestVersion})
+				</p>
+			</div>
+			<div class="alert-actions">
+				<a
+					href={updateResult.downloadUrl}
+					class="variant-filled-warning btn"
+					target="_blank"
+					on:click={() => {
+						if (updateResult.status === "success" && updateResult.updateAvailable) {
+							closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
+						}
+					}}
+				>
+					Download
+				</a>
+				<button
+					type="button"
+					class="variant-outline-warning btn"
+					on:click={() => {
+						if (updateResult.status === "success" && updateResult.updateAvailable) {
+							modalStore.trigger({
+								type: "alert",
+								title: `Changelog for ${serverVersion.platform} ${updateResult.latestVersion}`,
+								body: `
 									<em>Only the changelog <strong>from your current version</strong> (${
 										serverVersion.version
 									}) is shown.</em>
@@ -242,162 +242,159 @@
 										)
 										.join("<hr />")}
 								`
-								});
-							}
-						}}
-					>
-						See changelog
-					</button>
-					<button
-						type="button"
-						class="btn-icon"
-						use:popup={{
-							event: "click",
-							target: "dismissServerUpdateAlert"
-						}}
-					>
-						<XIcon />
-					</button>
-				</div>
-			</aside>
-			<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissServerUpdateAlert">
-				<div class="bg-surface-100-800-token arrow" />
-				<nav class="list-nav">
-					<ul>
-						<li class="child:w-full">
-							<button
-								type="button"
-								on:click={() => {
-									if (updateResult.status === "success" && updateResult.updateAvailable) {
-										closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
-									}
-								}}
-							>
-								<span class="badge">
-									<XIcon />
-								</span>
-								<span>Close</span>
-							</button>
-						</li>
-						<hr />
-						<li class="child:w-full">
-							<button
-								type="button"
-								class="text-error-500 hover:!bg-error-backdrop-token"
-								on:click={() =>
-									modalStore.trigger({
-										type: "confirm",
-										title: "Are you sure?",
-										body: "You will never see any update alerts again.",
-										response: r => {
-											if (r) {
-												$neverServerUpdatesStore = true;
-											}
+							});
+						}
+					}}
+				>
+					See changelog
+				</button>
+				<button
+					type="button"
+					class="btn-icon"
+					use:popup={{
+						event: "click",
+						target: "dismissServerUpdateAlert"
+					}}
+				>
+					<XIcon />
+				</button>
+			</div>
+		</aside>
+		<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissServerUpdateAlert">
+			<div class="bg-surface-100-800-token arrow" />
+			<nav class="list-nav">
+				<ul>
+					<li class="child:w-full">
+						<button
+							type="button"
+							on:click={() => {
+								if (updateResult.status === "success" && updateResult.updateAvailable) {
+									closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
+								}
+							}}
+						>
+							<span class="badge">
+								<XIcon />
+							</span>
+							<span>Close</span>
+						</button>
+					</li>
+					<hr />
+					<li class="child:w-full">
+						<button
+							type="button"
+							class="text-error-500 hover:!bg-error-backdrop-token"
+							on:click={() =>
+								modalStore.trigger({
+									type: "confirm",
+									title: "Are you sure?",
+									body: "You will never see any update alerts again.",
+									response: r => {
+										if (r) {
+											$neverServerUpdatesStore = true;
 										}
-									})}
-							>
-								<span class="badge">
-									<XCircleIcon />
-								</span>
-								<span>Never show again</span>
-							</button>
-						</li>
-					</ul>
-				</nav>
+									}
+								})}
+						>
+							<span class="badge">
+								<XCircleIcon />
+							</span>
+							<span>Never show again</span>
+						</button>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	{/if}
+
+	{#await getMinecraftVersions() then versions}
+		{@const versionsString = versions.map(v => v.id)}
+		{#if query && !closedMinecraftVersions.includes(versions[0].id) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
+			{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
+				{@const newestVersion = versions[0]}
+				<aside class="alert variant-ghost-secondary">
+					<div>
+						<BoxIcon />
+					</div>
+					<div class="alert-message">
+						<p>
+							A new <strong>Minecraft</strong> version ({newestVersion.id}) is available!
+						</p>
+					</div>
+					<div class="alert-actions">
+						<button
+							type="button"
+							class="btn-icon"
+							use:popup={{
+								event: "click",
+								target: "dismissMinecraftUpdateAlert"
+							}}
+						>
+							<XIcon />
+						</button>
+					</div>
+				</aside>
+				<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissMinecraftUpdateAlert">
+					<div class="bg-surface-100-800-token arrow" />
+					<nav class="list-nav">
+						<ul>
+							<li class="child:w-full">
+								<button
+									type="button"
+									on:click={() =>
+										(closedMinecraftVersions = [...closedMinecraftVersions, newestVersion.id])}
+								>
+									<span class="badge">
+										<XIcon />
+									</span>
+									<span>Close</span>
+								</button>
+							</li>
+							<hr />
+							<li class="child:w-full">
+								<button
+									type="button"
+									class="text-error-500 hover:!bg-error-backdrop-token"
+									on:click={() =>
+										modalStore.trigger({
+											type: "confirm",
+											title: "Are you sure?",
+											body: "All future Minecraft updates will be ignored <strong>for this server</strong>.",
+											response: r => {
+												if (r) {
+													$ignoreMCUpdatesStore = [...$ignoreMCUpdatesStore, $serverIndexStore];
+												}
+											}
+										})}
+								>
+									<span class="badge">
+										<XCircleIcon />
+									</span>
+									<span>Never show again</span>
+								</button>
+							</li>
+						</ul>
+					</nav>
+				</div>
+			{/if}
+		{/if}
+	{/await}
+
+	<div class="p-8">
+		<DashboardOverview
+			instance={currentServer}
+			platform={currentServer.features.rcon ? serverVersion : undefined}
+			fetchedData={query}
+			on:server-stopped={loadServer}
+		/>
+		{#if currentServer.features.rcon || (!currentServer.features.rcon && query.players.sample)}
+			<hr class="my-8 !border-t-2" />
+			<div class="flex flex-col gap-4">
+				<h3 class="h3">Players</h3>
+				<DashboardPlayerTables server={currentServer} players={query.players.sample ?? []} />
 			</div>
 		{/if}
-
-		{#await getMinecraftVersions() then versions}
-			{@const versionsString = versions.map(v => v.id)}
-			{#if query && !closedMinecraftVersions.includes(versions[0].id) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
-				{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
-					{@const newestVersion = versions[0]}
-					<aside class="alert variant-ghost-secondary">
-						<div>
-							<BoxIcon />
-						</div>
-						<div class="alert-message">
-							<p>
-								A new <strong>Minecraft</strong> version ({newestVersion.id}) is available!
-							</p>
-						</div>
-						<div class="alert-actions">
-							<button
-								type="button"
-								class="btn-icon"
-								use:popup={{
-									event: "click",
-									target: "dismissMinecraftUpdateAlert"
-								}}
-							>
-								<XIcon />
-							</button>
-						</div>
-					</aside>
-					<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissMinecraftUpdateAlert">
-						<div class="bg-surface-100-800-token arrow" />
-						<nav class="list-nav">
-							<ul>
-								<li class="child:w-full">
-									<button
-										type="button"
-										on:click={() =>
-											(closedMinecraftVersions = [...closedMinecraftVersions, newestVersion.id])}
-									>
-										<span class="badge">
-											<XIcon />
-										</span>
-										<span>Close</span>
-									</button>
-								</li>
-								<hr />
-								<li class="child:w-full">
-									<button
-										type="button"
-										class="text-error-500 hover:!bg-error-backdrop-token"
-										on:click={() =>
-											modalStore.trigger({
-												type: "confirm",
-												title: "Are you sure?",
-												body: "All future Minecraft updates will be ignored <strong>for this server</strong>.",
-												response: r => {
-													if (r) {
-														$ignoreMCUpdatesStore = [...$ignoreMCUpdatesStore, $serverIndexStore];
-													}
-												}
-											})}
-									>
-										<span class="badge">
-											<XCircleIcon />
-										</span>
-										<span>Never show again</span>
-									</button>
-								</li>
-							</ul>
-						</nav>
-					</div>
-				{/if}
-			{/if}
-		{/await}
-
-		<div class="p-8">
-			<DashboardOverview
-				instance={currentServer}
-				platform={currentServer.features.rcon ? serverVersion : undefined}
-				fetchedData={query}
-				on:server-stopped={loadServer}
-			/>
-			{#if !currentServer.features.rcon && query.players.sample}
-				<hr class="my-8 !border-t-2" />
-				<div class="flex flex-col gap-4">
-					<h3 class="h3">Players</h3>
-					<DashboardPlayerTables server={currentServer} players={query.players.sample ?? []} />
-				</div>
-			{/if}
-		</div>
-	<!-- {:else} -->
-	<!-- TODO: placeholders? -->
-	{/if}
+	</div>
 {:else}
 	<div class="flex h-full w-full flex-col items-center justify-center">
 		<p class="pb-16 text-9xl font-bold opacity-50">:(</p>

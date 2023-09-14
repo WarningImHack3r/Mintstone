@@ -189,7 +189,7 @@ class RCONController: DisposableBean {
                     contains("Spigot") -> "Spigot" // TODO: Check if this is correct
                     contains("Bukkit") -> "Bukkit" // TODO: Check if this is correct
                     // TODO: Add more platforms?
-                    startsWith("Unknown command") -> "Vanilla"
+                    startsWith("Unknown ") -> "Vanilla"
                     else -> "Unknown"
                 }
             }
@@ -511,11 +511,18 @@ class RCONController: DisposableBean {
             serverPort,
             serverPassword
         ), WhiteListCommand(WhiteListMode.Management.LIST))
-            .split(", ")
-            .map { playerLine ->
-                object {
-                    val name = playerLine.removePrefix(playerLine.substringBefore(":") + ":").trim()
+            .let { list ->
+                if (!list.contains(",")) {
+                    emptyArray<String>()
+                } else {
+                    list
+                        .split(", ")
+                        .map { playerLine ->
+                            object {
+                                val name = playerLine.removePrefix(playerLine.substringBefore(":") + ":").trim()
+                            }
+                        }.filter { it.name.isNotEmpty() }
                 }
-            }.filter { it.name.isNotEmpty() }
+            }
     }
 }

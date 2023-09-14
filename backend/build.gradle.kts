@@ -31,7 +31,7 @@ dependencies {
     // RCON
     implementation("com.github.WarningImHack3r:minecraft-rcon:1.1.1")
     // Query protocol
-    implementation("com.github.tekgator:JAVA-QueryMinecraftServer:1.2") {
+    implementation("com.github.Lenni0451:JAVA-QueryMinecraftServer:1.3") {
         exclude(group = "org.slf4j", module = "slf4j-api")
         exclude(group = "org.slf4j", module = "slf4j-simple")
     }

@@ -29,9 +29,10 @@ Edit your `server.properties` by changing the following values:
 ```properties
 # Enable most of the features
 enable-rcon=true
-# Set any password you want but set one
+# Set any password you want but set one. If you don't, the server will automatically disable RCON
 rcon.password=<your password>
 # Change it or leave it as is, but make sure it's not the same as your server port and note it down
+# Note: don't forget to open this port in your firewall if you want to access it from outside your network
 rcon.port=<your port>
 
 # Enable monitoring features

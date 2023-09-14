@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { serversDb } from "$lib/db/stores";
 	import { getDrawerStore, getModalStore, localStorageStore, popup } from "@skeletonlabs/skeleton";
-	import { Edit2Icon, EditIcon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
+	import { Edit2Icon, MoreVerticalIcon, PlusIcon, TrashIcon } from "svelte-feather-icons";
 	import { api, disableTypeCheck } from "$lib/utils";
 
 	const drawerStore = getDrawerStore();
@@ -23,7 +23,8 @@
 
 	let editMode = false;
 	const serverIndexStore = localStorageStore("serverIndex", 0);
-	$: $serverIndexStore = $serversDb.length > 0 ? $serversDb.length - 1 : 0;
+	$: $serverIndexStore =
+		$serverIndexStore > $serversDb.length && $serversDb.length > 0 ? 0 : $serverIndexStore;
 </script>
 
 <nav class="list-nav p-4">
@@ -43,6 +44,7 @@
 							response: r => {
 								if (r) {
 									$serversDb = [...$serversDb, r];
+									$serverIndexStore = $serversDb.length - 1;
 								}
 							}
 						})}
@@ -78,8 +80,14 @@
 					{#if editMode}
 						<div class="list-option">
 							<span class="variant-soft-tertiary badge-icon p-1">
-								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`)) then query}
-									<img src={query.query.favicon} alt={server.name} />
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`))}
+									{server.name[0].toUpperCase()}
+								{:then query}
+									{#if query.query.favicon}
+										<img src={query.query.favicon} alt={server.name} />
+									{:else}
+										{server.name[0].toUpperCase()}
+									{/if}
 								{:catch}
 									{server.name[0].toUpperCase()}
 								{/await}
@@ -106,8 +114,14 @@
 							on:click={e => serverSelected(e.target, index)}
 						>
 							<span class="variant-soft-tertiary badge-icon p-1">
-								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`)) then query}
-									<img src={query.query.favicon} alt={server.name} />
+								{#await disableTypeCheck(api(`/query?${new URLSearchParams( { server: server.address } )}`))}
+									{server.name[0].toUpperCase()}
+								{:then query}
+									{#if query.query.favicon}
+										<img src={query.query.favicon} alt={server.name} />
+									{:else}
+										{server.name[0].toUpperCase()}
+									{/if}
 								{:catch}
 									{server.name[0].toUpperCase()}
 								{/await}

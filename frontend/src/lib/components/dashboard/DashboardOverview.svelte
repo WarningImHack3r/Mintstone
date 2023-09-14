@@ -30,9 +30,11 @@
 	<!-- Left part -->
 	<div class="flex items-center gap-4">
 		<!-- Logo -->
-		<div class="card rounded-full p-4 shadow-md">
-			<img src={fetchedData.favicon} alt="Logo for {instance.name}" />
-		</div>
+		{#if fetchedData.favicon}
+			<div class="card rounded-full p-4 shadow-md">
+				<img src={fetchedData.favicon} alt="Logo for {instance.name}" />
+			</div>
+		{/if}
 		<!-- Info -->
 		<div class="flex flex-col gap-2">
 			<div class="flex items-baseline gap-4">

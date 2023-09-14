@@ -10,7 +10,7 @@ export const backendUrl = "http://localhost:8080";
 export async function api<T>(route: string, init?: Parameters<typeof fetch>[1]) {
 	const response = await fetch(`${backendUrl}${route}`, init);
 	if (!response.ok) {
-		throw new Error(response.statusText);
+		throw new Error(`${response.statusText}: ${await response.text()}`);
 	}
 	return response.json() as Promise<T>;
 }
@@ -18,7 +18,7 @@ export async function api<T>(route: string, init?: Parameters<typeof fetch>[1]) 
 export async function getMinecraftVersions() {
 	const response = await fetch("https://launchermeta.mojang.com/mc/game/version_manifest.json");
 	if (!response.ok) {
-		throw new Error(response.statusText);
+		throw new Error(`${response.statusText}: ${await response.text()}`);
 	}
 	return (await (response.json() as Promise<{ versions: MinecraftVersion[] }>)).versions.filter(
 		version => version.type === "release"
@@ -31,7 +31,7 @@ async function getMinecraftProtocolVersions() {
 		"https://raw.githubusercontent.com/skyrising/mc-versions/main/data/protocol/netty.json"
 	);
 	if (!response.ok) {
-		throw new Error(response.statusText);
+		throw new Error(`${response.statusText}: ${await response.text()}`);
 	}
 	return await (response.json() as Promise<MinecraftProtocolSource>);
 }
@@ -46,7 +46,7 @@ export async function minecraftVersionFromProtocol(protocol: number) {
 export async function avatarFromPlayerUUID(uuid: UUID) {
 	const response = await fetch(`https://crafatar.com/avatars/${uuid}`);
 	if (!response.ok) {
-		throw new Error(response.statusText);
+		throw new Error(`${response.statusText}: ${await response.text()}`);
 	}
 	return response.blob();
 }
