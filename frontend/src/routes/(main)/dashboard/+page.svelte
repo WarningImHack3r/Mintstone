@@ -24,9 +24,11 @@
 
 	// Initial state
 	let loadingDone = false;
+	let hideMinimalModeWarning = false;
 	let serverVersion: Version | undefined;
 	let query: QueryResult | undefined;
-	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : undefined;
+	$: currentServer =
+		$serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : undefined;
 	$: if (currentServer) {
 		loadServer();
 	} else {
@@ -162,6 +164,7 @@
 		{/await}
 	</div>
 {:else if loadingDone && currentServer && query}
+	<!-- Server updates banner -->
 	{#if serverVersion && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
 		<aside class="alert variant-ghost-warning">
 			<div>
@@ -179,7 +182,12 @@
 					class="variant-filled-warning btn"
 					target="_blank"
 					on:click={() => {
-						if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
+						if (
+							serverVersion &&
+							updateResult &&
+							updateResult.status === "success" &&
+							updateResult.updateAvailable
+						) {
 							closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 						}
 					}}
@@ -190,7 +198,12 @@
 					type="button"
 					class="variant-outline-warning btn"
 					on:click={() => {
-						if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
+						if (
+							serverVersion &&
+							updateResult &&
+							updateResult.status === "success" &&
+							updateResult.updateAvailable
+						) {
 							modalStore.trigger({
 								type: "alert",
 								title: `Changelog for ${serverVersion.platform} ${updateResult.latestVersion}`,
@@ -264,7 +277,12 @@
 						<button
 							type="button"
 							on:click={() => {
-								if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
+								if (
+									serverVersion &&
+									updateResult &&
+									updateResult.status === "success" &&
+									updateResult.updateAvailable
+								) {
 									closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 								}
 							}}
@@ -303,6 +321,7 @@
 		</div>
 	{/if}
 
+	<!-- Minecraft updates banner -->
 	{#if gameVersion}
 		{#await getMinecraftVersions() then versions}
 			{@const versionsString = versions.map(v => v.id)}
@@ -378,6 +397,45 @@
 		{/await}
 	{/if}
 
+	<!-- Minimal mode banner warning -->
+	{#if currentServer.features.rcon && !serverVersion && !hideMinimalModeWarning}
+		<aside class="alert variant-ghost-error">
+			<div>
+				<AlertCircleIcon />
+			</div>
+			<div class="alert-message">
+				<p>
+					<strong>Minimal mode</strong> is enabled, because your server doesn't seem to support RCON.
+					Please check its configuration then reload the page, or disable RCON for this server.
+				</p>
+			</div>
+			<div class="alert-actions">
+				<button
+					type="button"
+					class="variant-outline-error btn"
+					on:click={() =>
+						modalStore.trigger({
+							type: "confirm",
+							title: "Disable RCON",
+							body: `Are you sure you want to disable RCON for "${currentServer?.name}"? You will lose access to a lot of features. You can re-enable it at any time.`,
+							response(r) {
+								if (r && currentServer) {
+									currentServer.features.rcon = false;
+									$serversDb = [...$serversDb];
+								}
+							}
+						})}
+				>
+					Disable RCON for this server
+				</button>
+				<button type="button" class="btn-icon" on:click={() => (hideMinimalModeWarning = true)}>
+					<XIcon />
+				</button>
+			</div>
+		</aside>
+	{/if}
+
+	<!-- Main content -->
 	<div class="p-8">
 		<DashboardOverview
 			instance={currentServer}
@@ -385,7 +443,7 @@
 			fetchedData={query}
 			on:server-stopped={loadServer}
 		/>
-		{#if currentServer.features.rcon || (!currentServer.features.rcon && query.players.sample)}
+		{#if serverVersion && (currentServer.features.rcon || (!currentServer.features.rcon && query.players.sample))}
 			<hr class="my-8 !border-t-2" />
 			<div class="flex flex-col gap-4">
 				<h3 class="h3">Players</h3>

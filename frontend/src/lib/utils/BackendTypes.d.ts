@@ -38,7 +38,7 @@ export type Server = {
 	features: {
 		rcon: boolean;
 		jmx: boolean;
-	}
+	};
 };
 
 export type Query = {
