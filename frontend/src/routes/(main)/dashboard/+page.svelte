@@ -23,43 +23,46 @@
 	const serverIndexStore = localStorageStore("serverIndex", 0);
 
 	// Initial state
-	let initialCheckDone: boolean | undefined = undefined;
-	let serverVersion: Version;
-	let query: QueryResult;
-	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : null;
+	let loadingDone = false;
+	let serverVersion: Version | undefined;
+	let query: QueryResult | undefined;
+	$: currentServer = $serversDb.length > $serverIndexStore ? $serversDb[$serverIndexStore] : undefined;
 	$: if (currentServer) {
 		loadServer();
 	} else {
-		initialCheckDone = undefined;
+		query = undefined;
+		serverVersion = undefined;
+		updateResult = undefined;
+		gameVersion = undefined;
 	}
 
 	// Check for updates
-	let updateResult: UpdateCheck;
+	let updateResult: UpdateCheck | undefined;
 	let closedServerVersions: Record<string, string> = {};
 	$: showServerUpdates =
 		updateResult && updateResult.status === "success" && updateResult.updateAvailable
-			? closedServerVersions[updateResult.latestVersion] !== serverVersion.platform &&
+			? closedServerVersions[updateResult.latestVersion] !== serverVersion?.platform &&
 			  !$neverServerUpdatesStore
 			: !$neverServerUpdatesStore;
 
 	// Minecraft versions
 	let closedMinecraftVersions: string[] = [];
-	let gameVersion: string;
+	let gameVersion: string | undefined;
 
 	async function loadServer() {
 		if (!currentServer) return;
-		initialCheckDone = false;
+		loadingDone = false;
 		try {
+			query = (
+				await api<Query>(
+					`/query?${new URLSearchParams({
+						server: currentServer.address
+					})}`
+				)
+			).query;
 			if (!currentServer.features.rcon) {
 				// Only query and quit
-				query = (
-					await api<Query>(
-						`/query?${new URLSearchParams({
-							server: currentServer.address
-						})}`
-					)
-				).query;
-				initialCheckDone = true;
+				loadingDone = true;
 				return;
 			}
 			serverVersion = await api<Version>(
@@ -70,16 +73,8 @@
 				})}`
 			);
 		} catch (error) {}
-		initialCheckDone = true;
 
-		if (serverVersion) {
-			query = (
-				await api<Query>(
-					`/query?${new URLSearchParams({
-						server: currentServer.address
-					})}`
-				)
-			).query;
+		if (query && serverVersion) {
 			gameVersion =
 				(await minecraftVersionFromProtocol(query.version.protocol)) ??
 				query.version.name.split(" ")[1];
@@ -102,6 +97,7 @@
 				}
 			);
 		}
+		loadingDone = true;
 	}
 </script>
 
@@ -109,7 +105,7 @@
 	<title>Dashboard | Mintstone</title>
 </svelte:head>
 
-{#if initialCheckDone === undefined}
+{#if $serversDb.length === 0}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
 		<AlertCircleIcon size="8x" class="mb-8 opacity-50" />
 		<h2 class="h2">No server yet...</h2>
@@ -140,7 +136,7 @@
 			<span>Add your server</span>
 		</button>
 	</div>
-{:else if initialCheckDone === false || (serverVersion && (!currentServer || !query))}
+{:else if !loadingDone}
 	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
 		<ProgressRadial
 			stroke={100}
@@ -165,8 +161,8 @@
 			</button>
 		{/await}
 	</div>
-{:else if serverVersion && currentServer && query}
-	{#if currentServer.features.rcon && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
+{:else if loadingDone && currentServer && query}
+	{#if serverVersion && showServerUpdates && updateResult && updateResult.status === "success" && updateResult.updateAvailable}
 		<aside class="alert variant-ghost-warning">
 			<div>
 				<InfoIcon />
@@ -183,7 +179,7 @@
 					class="variant-filled-warning btn"
 					target="_blank"
 					on:click={() => {
-						if (updateResult.status === "success" && updateResult.updateAvailable) {
+						if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
 							closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 						}
 					}}
@@ -194,7 +190,7 @@
 					type="button"
 					class="variant-outline-warning btn"
 					on:click={() => {
-						if (updateResult.status === "success" && updateResult.updateAvailable) {
+						if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
 							modalStore.trigger({
 								type: "alert",
 								title: `Changelog for ${serverVersion.platform} ${updateResult.latestVersion}`,
@@ -226,7 +222,7 @@
 																	'<a href="https://github.com/$1/issues/$2" class="anchor">$1#$2</a>'
 																);
 																// Replace PR/issues referenced by GH format (#issue)
-																if (serverVersion.platform === "Paper") {
+																if (serverVersion?.platform === "Paper") {
 																	change = change.replace(
 																		/\(#(\d+)\)/g,
 																		'(<a href="https://github.com/PaperMC/Paper/pull/$1" class="anchor">#$1</a>)'
@@ -268,7 +264,7 @@
 						<button
 							type="button"
 							on:click={() => {
-								if (updateResult.status === "success" && updateResult.updateAvailable) {
+								if (serverVersion && updateResult && updateResult.status === "success" && updateResult.updateAvailable) {
 									closedServerVersions[updateResult.latestVersion] = serverVersion.platform;
 								}
 							}}
@@ -307,83 +303,85 @@
 		</div>
 	{/if}
 
-	{#await getMinecraftVersions() then versions}
-		{@const versionsString = versions.map(v => v.id)}
-		{#if query && !closedMinecraftVersions.includes(versions[0].id) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
-			{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
-				{@const newestVersion = versions[0]}
-				<aside class="alert variant-ghost-secondary">
-					<div>
-						<BoxIcon />
-					</div>
-					<div class="alert-message">
-						<p>
-							A new <strong>Minecraft</strong> version ({newestVersion.id}) is available!
-						</p>
-					</div>
-					<div class="alert-actions">
-						<button
-							type="button"
-							class="btn-icon"
-							use:popup={{
-								event: "click",
-								target: "dismissMinecraftUpdateAlert"
-							}}
-						>
-							<XIcon />
-						</button>
-					</div>
-				</aside>
-				<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissMinecraftUpdateAlert">
-					<div class="bg-surface-100-800-token arrow" />
-					<nav class="list-nav">
-						<ul>
-							<li class="child:w-full">
-								<button
-									type="button"
-									on:click={() =>
-										(closedMinecraftVersions = [...closedMinecraftVersions, newestVersion.id])}
-								>
-									<span class="badge">
-										<XIcon />
-									</span>
-									<span>Close</span>
-								</button>
-							</li>
-							<hr />
-							<li class="child:w-full">
-								<button
-									type="button"
-									class="text-error-500 hover:!bg-error-backdrop-token"
-									on:click={() =>
-										modalStore.trigger({
-											type: "confirm",
-											title: "Are you sure?",
-											body: "All future Minecraft updates will be ignored <strong>for this server</strong>.",
-											response: r => {
-												if (r) {
-													$ignoreMCUpdatesStore = [...$ignoreMCUpdatesStore, $serverIndexStore];
+	{#if gameVersion}
+		{#await getMinecraftVersions() then versions}
+			{@const versionsString = versions.map(v => v.id)}
+			{#if query && !closedMinecraftVersions.includes(versions[0].id) && !$ignoreMCUpdatesStore.includes($serverIndexStore)}
+				{#if versionsString.includes(gameVersion) && versionsString.indexOf(gameVersion) > 0}
+					{@const newestVersion = versions[0]}
+					<aside class="alert variant-ghost-secondary">
+						<div>
+							<BoxIcon />
+						</div>
+						<div class="alert-message">
+							<p>
+								A new <strong>Minecraft</strong> version ({newestVersion.id}) is available!
+							</p>
+						</div>
+						<div class="alert-actions">
+							<button
+								type="button"
+								class="btn-icon"
+								use:popup={{
+									event: "click",
+									target: "dismissMinecraftUpdateAlert"
+								}}
+							>
+								<XIcon />
+							</button>
+						</div>
+					</aside>
+					<div class="card z-10 w-fit p-2 shadow-xl" data-popup="dismissMinecraftUpdateAlert">
+						<div class="bg-surface-100-800-token arrow" />
+						<nav class="list-nav">
+							<ul>
+								<li class="child:w-full">
+									<button
+										type="button"
+										on:click={() =>
+											(closedMinecraftVersions = [...closedMinecraftVersions, newestVersion.id])}
+									>
+										<span class="badge">
+											<XIcon />
+										</span>
+										<span>Close</span>
+									</button>
+								</li>
+								<hr />
+								<li class="child:w-full">
+									<button
+										type="button"
+										class="text-error-500 hover:!bg-error-backdrop-token"
+										on:click={() =>
+											modalStore.trigger({
+												type: "confirm",
+												title: "Are you sure?",
+												body: "All future Minecraft updates will be ignored <strong>for this server</strong>.",
+												response: r => {
+													if (r) {
+														$ignoreMCUpdatesStore = [...$ignoreMCUpdatesStore, $serverIndexStore];
+													}
 												}
-											}
-										})}
-								>
-									<span class="badge">
-										<XCircleIcon />
-									</span>
-									<span>Never show again</span>
-								</button>
-							</li>
-						</ul>
-					</nav>
-				</div>
+											})}
+									>
+										<span class="badge">
+											<XCircleIcon />
+										</span>
+										<span>Never show again</span>
+									</button>
+								</li>
+							</ul>
+						</nav>
+					</div>
+				{/if}
 			{/if}
-		{/if}
-	{/await}
+		{/await}
+	{/if}
 
 	<div class="p-8">
 		<DashboardOverview
 			instance={currentServer}
-			platform={currentServer.features.rcon ? serverVersion : undefined}
+			platform={serverVersion}
 			fetchedData={query}
 			on:server-stopped={loadServer}
 		/>
