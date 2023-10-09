@@ -54,6 +54,7 @@ Then restart your server.
         -p 3000:3000 \
         ghcr.io/warningimhack3r/mintstone
     ```
+    > `8080:8080` needs to be exposed in order for Mintstone to work. `3000:3000` is also required, although it can be changed to any other port (`1234:3000` to use port 1234, for example).
 3. Open `http://localhost:3000` in your browser.
 
 #### Manual (Docker Compose)

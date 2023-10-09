@@ -12,7 +12,7 @@ COPY backend/src src
 RUN ./gradlew clean build -x test
 
 # Build frontend
-FROM node:slim AS build-front
+FROM node:20-slim AS build-front
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -28,7 +28,8 @@ RUN apt-get update && \
     apt-get install -y curl ca-certificates gnupg && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
     echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && apt-get install -y nodejs
+    apt-get update && apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 WORKDIR /app
 COPY --from=build-back /app/build/libs/mintstone-backend.jar back/app.jar
