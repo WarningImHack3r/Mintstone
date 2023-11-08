@@ -1,5 +1,5 @@
 # Build backend
-FROM eclipse-temurin:20-jdk-jammy AS build-back
+FROM eclipse-temurin:21-jdk-jammy AS build-back
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
 # Build final image
-FROM eclipse-temurin:20-jre-jammy
+FROM eclipse-temurin:21-jre-jammy
 RUN apt-get update && \
     apt-get install -y curl ca-certificates gnupg && \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
