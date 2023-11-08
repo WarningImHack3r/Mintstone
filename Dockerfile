@@ -12,7 +12,7 @@ COPY backend/src src
 RUN ./gradlew clean build -x test
 
 # Build frontend
-FROM node:20-slim AS build-front
+FROM node:21-slim AS build-front
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
