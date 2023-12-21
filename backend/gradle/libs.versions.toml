@@ -1,7 +1,7 @@
 [versions]
-kotlin = "1.9.21"
-spring = "1.9.21"
-springBoot = "3.2.0"
+kotlin = "1.9.22"
+spring = "1.9.22"
+springBoot = "3.2.1"
 springDependencyManagement = "1.1.4"
 
 [plugins]
