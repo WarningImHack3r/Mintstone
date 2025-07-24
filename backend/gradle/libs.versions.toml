@@ -1,8 +1,8 @@
 [versions]
-kotlin = "1.9.21"
-spring = "1.9.21"
-springBoot = "3.2.0"
-springDependencyManagement = "1.1.4"
+kotlin = "1.9.25"
+spring = "1.9.25"
+springBoot = "3.5.4"
+springDependencyManagement = "1.1.7"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
