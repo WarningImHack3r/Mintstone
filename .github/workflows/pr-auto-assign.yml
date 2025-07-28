@@ -13,4 +13,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🧑🏻‍💻 Automatically assign an author
-        uses: toshimaru/auto-author-assign@v2.0.1
+        uses: toshimaru/auto-author-assign@v2.1.1
