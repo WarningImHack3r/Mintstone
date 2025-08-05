@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.7_6-jdk-jammy AS build
+FROM eclipse-temurin:21.0.8_9-jdk-jammy AS build
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY src src
 
 RUN ./gradlew clean build -x test
 
-FROM eclipse-temurin:21.0.7_6-jre-jammy
+FROM eclipse-temurin:21.0.8_9-jre-jammy
 WORKDIR /app
 COPY --from=build /app/build/libs/mintstone-backend.jar app.jar
 EXPOSE 8080
